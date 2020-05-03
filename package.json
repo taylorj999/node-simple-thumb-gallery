@@ -1,0 +1,28 @@
+{
+  "name": "node-simple-thumb-gallery",
+  "version": "0.0.1",
+  "description": "node-simple-thumb-gallery",
+  "scripts": {
+    "setup-css": "copyfiles -f \"node_modules/bootstrap/dist/css/bootstrap.min.css\" public/css/",
+    "setup-js": "copyfiles -f \"node_modules/bootstrap/dist/js/bootstrap.min.js\" \"node_modules/jquery/dist/jquery.min.js\" public/js/",
+    "setup": "npm run setup-css && npm run setup-js",
+    "start": "nodemon app.js"
+  },
+  "repository": "https://github.com/taylorj999/node-simple-thumb-gallery",
+  "keywords": [
+    "node.js",
+    "eclipse",
+    "nodeclipse"
+  ],
+  "author": "",
+  "license": "MIT",
+  "readmeFilename": "README.md",
+  "dependencies": {
+    "bootstrap": "^4.3.1",
+    "express": "4.17.1",
+    "jquery": "^3.4.1",
+    "mongodb": "^3.3.3",
+    "popper.js": "^1.16.0",
+    "validator": "11.0.0"
+  }
+}
