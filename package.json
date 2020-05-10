@@ -18,11 +18,14 @@
   "license": "MIT",
   "readmeFilename": "README.md",
   "dependencies": {
-    "bootstrap": "^4.3.1",
+    "bootstrap": "^4.4.1",
+    "connect-mongodb-session": "^2.3.1",
+    "ejs": "^3.1.2",
     "express": "4.17.1",
+    "express-session": "^1.17.1",
     "jquery": "^3.4.1",
     "mongodb": "^3.3.3",
-    "popper.js": "^1.16.0",
+    "popper.js": "^1.16.1",
     "validator": "11.0.0"
   }
 }
