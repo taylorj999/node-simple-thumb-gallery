@@ -16,7 +16,7 @@ config.system.port = 3013;
 
 config.site = {};
 
-config.site.gallerytabs = ["Main"];
+config.site.gallerytabs = ["Main","Secondary"];
 
 config.site.optionalFields = [
 	{

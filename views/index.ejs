@@ -4,6 +4,10 @@
  <%- include('partials/header', {'page': page}) %>
 </head>
 <body>
+ <% if (galleries.length > 1) { %>
+   <%- include('partials/multigallerymenu',{'galleries':galleries}) %>
+ <% } %>
+ <%- include('partials/mainmenu') %>
 TEST
 </body>
 </html>

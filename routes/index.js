@@ -5,7 +5,7 @@ module.exports = exports = function(app, db) {
 	"use strict";
 
 	app.get('/',function(req,res) {
-		res.render('index', {"page":"Index"});
+		res.render('index', {"page":"Index","galleries":config.site.gallerytabs});
 	});
 	
 	// catch 404 and forward to error handler
