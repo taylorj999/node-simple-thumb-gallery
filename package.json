@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "description": "node-simple-thumb-gallery",
   "scripts": {
-    "setup-css": "copyfiles -f \"node_modules/bootstrap/dist/css/bootstrap.min.css\" public/css/",
+    "setup-css": "copyfiles -f \"node_modules/bootstrap/dist/css/bootstrap.min.css\" \"node_modules/bootstrap/dist/css/bootstrap.min.css.map\" public/css/",
     "setup-js": "copyfiles -f \"node_modules/bootstrap/dist/js/bootstrap.min.js\" \"node_modules/jquery/dist/jquery.min.js\" public/js/",
     "setup": "npm run setup-css && npm run setup-js",
     "start": "nodemon app.js"
@@ -18,12 +18,12 @@
   "license": "MIT",
   "readmeFilename": "README.md",
   "dependencies": {
-    "bootstrap": "^4.4.1",
+    "bootstrap": "4.4.1",
     "connect-mongodb-session": "^2.3.1",
     "ejs": "^3.1.2",
     "express": "4.17.1",
     "express-session": "^1.17.1",
-    "jquery": "3.4.1",
+    "jquery": "3.5.1",
     "mongodb": "^3.3.3",
     "popper.js": "^1.16.1",
     "validator": "11.0.0"
