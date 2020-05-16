@@ -1,0 +1,28 @@
+<form method="POST" enctype="multipart/form-data" action="/edit">
+  <input type="hidden" name="id" value="<%=result._id%>"/>
+    <% if ('thumbnail' in result) { %>
+      <img src="/image?id=<%=result.thumbnail%>"/>
+    <% } else { %>
+    <div class="form-group row">
+      <input type="file" name="file" class="form-control">
+    </div>
+    <p>Or provide a URL:</p>
+    <div class="form-group row">
+      <label for="formFieldUrl" class="col-sm-2 col-form-label">Image URL:</label>
+      <input type="text" name="thumbnailUrl" class="form-control col-sm-10" id="formFieldUrl"/>
+    </div>
+    <% } %>
+  <hr/>
+  <div class="form-group row">
+    <label for="formFieldTitle" class="col-sm-2 col-form-label">Title:</label>
+    <input type="text" name="title" class="form-control col-sm-10" id="formFieldTitle" aria-describedBy="helpTitle" value="<%=result.title%>"/>
+  </div>
+  <div class="form-group row">
+    <label for="formfieldDesc" class="col-sm-2 col-form-label">Description (text):</label>
+    <textarea name="description" class="form-control col-sm-10" id="formfieldDesc" aria-describedby="helpDescription" rows="10"><%=result.description%></textarea>
+  </div>
+
+
+<%- include('optionalformfields', {'mode':'edit','values':result.optionalFields}) %>
+<button class="btn btn-primary" type="submit">Submit form</button>
+</form>

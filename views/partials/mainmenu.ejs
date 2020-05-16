@@ -1,7 +1,18 @@
 <div id="mainMenuNav" class="nav navbar navbar-expand-lg navbar-light bg-light" role="navigation">
   <div class="navbar-nav">
-    <a href="#" class="nav-item nav-link">Search</a>
-    <a href="#" class="nav-item nav-link">Browse</a>
-    <a href="#" class="nav-item nav-link">Add</a>
+    <a href="/?gallery=" class="navbar-brand"><%= gallery %></a>
+    <% if (active === "search") { %>
+      <a href="/search" class="nav-item nav-link active">Search</a>
+    <% } else { %>
+      <a href="/search" class="nav-item nav-link">Search</a>
+    <% } %>
+    <% if (active === "add") { %>
+      <a href="/add" class="nav-item nav-link active">Add</a>
+    <% } else { %>
+      <a href="/add" class="nav-item nav-link">Add</a>
+    <% } %>
+    <% if (page === "view") { %>
+      <a href="/edit?id=<%=id%>" class="nav-item nav-link">Edit</a>
+    <% } %>
   </div>
 </div>  

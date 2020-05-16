@@ -1,0 +1,28 @@
+<SCRIPT>
+function resetForm() {
+ var $searchform = $('#searchform')
+    $($searchform).find("input[type=text] , textarea ").each(function(){
+                $(this).val('');            
+    });
+    $($searchform).find("input[type=checkbox]").each(function() {
+       $(this).removeAttr('checked');
+    });
+}
+</SCRIPT>
+
+<form method="GET" action="/search" id="searchform">
+  <div class="form-group row">
+    <label for="formfieldDesc" class="col-sm-2 col-form-label">Description (text):</label>
+    <% let descValue = ""; 
+       if ("description" in values) { 
+         descValue = values["description"];
+       } %>
+    <input type="text" name="description" class="form-control col-sm-10" id="formfieldDesc" aria-describedby="helpDescription" value="<%=descValue%>"/>
+    <small id="helpDescription" class="form-text text-muted">Text-based search of the description field</small>
+  </div>
+
+
+<%- include('optionalformfields', {'mode':'search','values':values}) %>
+<button class="btn btn-primary" type="submit" name="search" value="new">Submit</button>
+<button class="btn btn-primary" type="button" onClick="resetForm();">Reset</button>
+</form>

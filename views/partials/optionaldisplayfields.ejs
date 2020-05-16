@@ -1,0 +1,37 @@
+<% for (let x=0;x<optionalFields.length;x++) { 
+     let field = optionalFields[x]; 
+     %>
+  <% if (field.type === "text") { 
+       let fieldValue = "";
+       if (field.name in values) {
+         fieldValue = values[field.name];
+       }
+       %>
+  <p><span class="font-weight-bold"><%=field.display%>:</span>
+     <span><%=fieldValue%></span></p>
+  <% } else if (field.type === "url") {
+       let fieldValue = "";
+       if (field.name in values) {
+         fieldValue = values[field.name];
+       }
+       %>
+  <p><span class="font-weight-bold"><%=field.display%>:</span>
+  <%   if (fieldValue.length > 0) { %>
+     <span><a href="<%=fieldValue%>" target="_new"><%=fieldValue%></a></span>
+  <%   } %>
+     </p>
+  <% } else if (field.type === "checkbox") {
+       let checkList = []; 
+       if (field.name in values) {
+         if (!!(values[field.name]) && (values[field.name]).constructor === Array) {
+           checkList = values[field.name];
+         }
+       } %>
+  <p><span class="font-weight-bold"><%=field.display%>:</span>
+     <span>
+  <%   for (let y=0;y<checkList.length;y++) {
+         if (y > 0) { %>, <% } %><%=checkList[y]%><%   } %>
+     </span></p>
+  <% } %>
+<% } %>  
+     

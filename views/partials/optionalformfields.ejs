@@ -1,0 +1,66 @@
+<% for (let x=0;x<optionalFields.length;x++) { 
+     let field = optionalFields[x]; 
+     %>
+  <% if (field.type === "text" || (field.type === "url" && (page === "edit" || page==="add"))) { 
+       let fieldValue = "";
+       if (field.name in values) {
+         fieldValue = values[field.name];
+       }
+       %>
+  <div class="form-group row">
+    <label for="formfield<%=field.name%>" class="col-sm-2 col-form-label"><%=field.display%></label>
+    <input type="text" name="<%=field.name%>" value="<%=fieldValue%>" class="form-control col-sm-10" id="formfield<%=field.name%>" aria-describedby="help<%=field.name%>"/>
+    <% if (field.description != undefined) { %>
+      <small id="help<%=field.name%>" class="form-text text-muted"><%=field.description%></small>
+    <% } %>
+  </div>
+  <% } else if (field.type === "checkbox") {
+       let checkList = []; 
+       if (field.name in values) {
+         if (!!(values[field.name]) && (values[field.name]).constructor === Array) {
+           checkList = values[field.name];
+         }
+       }
+  %>
+  <div class="form-group row">
+    <label for="formfield<%=field.name%>" class="col-sm-2 col-form-label"><%=field.display%></label>
+    <div class="col-sm-10">
+    <% for (let y=0;y<field.options.length;y++) { 
+         let isChecked = "";
+         if (checkList.indexOf(field.options[y]) != -1) {
+           isChecked = "CHECKED";
+         }
+    %>
+      <div class="form-check form-check-inline">
+        <input class="form-check-input" type="checkbox" id="check<%=field.name%><%=y%>" name="<%=field.name%>" value="<%=field.options[y]%>" <%=isChecked%>>
+        <label class="form-check-label" for="check<%=field.name%><%=y%>"><%=field.options[y]%></label>
+      </div>
+    <% } %>
+    </div>
+  </div>
+  <% } else if (field.type === "taglist") { 
+       let checkList = []; 
+       if (field.name in values) {
+         if (!!(values[field.name]) && (values[field.name]).constructor === Array) {
+           checkList = values[field.name];
+         }
+       }
+  %>
+  <div class="form-group row">
+    <label for="formfield<%=field.name%>" class="col-sm-2 col-form-label"><%=field.display%></label>
+    <div class="col-sm-10">
+    <% for (let y=0;y<field.options.length;y++) { 
+         let isChecked = "";
+         if (checkList.indexOf(field.options[y]) != -1) {
+           isChecked = "CHECKED";
+         }
+    %>
+      <div class="form-check form-check-inline">
+        <input class="form-check-input" type="checkbox" id="check<%=field.name%><%=y%>" name="<%=field.name%>" value="<%=field.options[y]%>" <%=isChecked%>>
+        <label class="form-check-label" for="check<%=field.name%><%=y%>"><%=field.options[y]%></label>
+      </div>
+    <% } %>
+    </div>
+  </div>
+  <% } %>
+<% } %>

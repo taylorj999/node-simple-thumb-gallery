@@ -1,0 +1,14 @@
+<form method="POST" action="/add">
+  <div class="form-group row">
+    <label for="formFieldTitle" class="col-sm-2 col-form-label">Title:</label>
+    <input type="text" name="title" class="form-control col-sm-10" id="formFieldTitle" aria-describedBy="helpTitle"/>
+  </div>
+  <div class="form-group row">
+    <label for="formfieldDesc" class="col-sm-2 col-form-label">Description (text):</label>
+    <textarea name="description" class="form-control col-sm-10" id="formfieldDesc" aria-describedby="helpDescription" rows="10"></textarea>
+  </div>
+
+
+<%- include('optionalformfields', {'mode':'add','values':{}}) %>
+<button class="btn btn-primary" type="submit">Submit form</button>
+</form>

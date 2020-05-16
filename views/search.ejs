@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+ <%- include('partials/header', {'page': page}) %>
+</head>
+<body>
+ <%- include('partials/mainmenu', {'active':'search','gallery':gallery}) %>
+<div class="container">
+ <% if (errorMsg.length > 0) { %>
+   <div class="alert alert-warning" role="alert">
+      <%=errorMsg%>
+   </div>
+ <% } %>
+<% if (searchResults.count > 0) { %>
+<p class="pt-2">
+  <button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#collapseSearch" aria-expanded="false" aria-controls="collapseSearch">
+    Refine Search
+  </button>
+</p>
+<div class="collapse" id="collapseSearch">
+<% } %>
+<%- include('partials/searchbox', {'optionalFields':optionalFields,'values':searchParams}) %>
+<% if (searchResults.count > 0) { %>
+</div>
+<div class="row">
+  <% for (let x=0;x<searchResults.data.length;x++) {
+       let result = searchResults.data[x]; %>
+     <% if (x>1 && x%6==0) { %> </div><div class="row pt-4"> <% } %>
+     <div class="col-sm-2 border">
+       <% if ("thumbnail" in result) { %>
+         <a href="/view?id=<%=result._id%>"><img class="w-100 h-100" src="/image?id=<%=result.thumbnail%>"/></a>
+       <% } else { %>
+         <a href="/view?id=<%=result._id%>"><img class="w-100 h-100" src="/images/No_image_available.svg"/></a>
+       <% } %>
+       <p class="text-center"><%=result.title%></p>
+     </div>
+  <% } %>
+</div>
+<% } %>
+</div>
+</body>
+</html>

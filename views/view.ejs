@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+ <%- include('partials/header', {'page': page}) %>
+</head>
+<body>
+ <%- include('partials/mainmenu', {'active':'view','gallery':gallery,'id':result._id}) %>
+<div class="container">
+  <% if (errorMsg.length > 0) { %>
+    <div class="alert alert-warning" role="alert">
+      <%=errorMsg%>
+    </div>
+  <% } %>
+  <p class="text-left"><h2><%=result.title%></h2></p>
+  <div class="row">
+    <div class="col-sm-6 border">
+       <% if ("thumbnail" in result) { %>
+         <img class="w-100 h-100" src="/image?id=<%=result.thumbnail%>"/>
+       <% } else { %>
+         <img class="w-100 h-100" src="/images/No_image_available.svg"/>
+       <% } %>
+    </div>
+    <div class="col-sm-6">
+      <%- include('partials/optionaldisplayfields',{'values':result.optionalFields}) %>
+    </div>
+  </div>
+  <hr/>
+  <div>
+    <h3>Description</h3>
+    <p class="text-left"><%=result.description%></p>
+  </div>
+</div>
+</body>
+</html>

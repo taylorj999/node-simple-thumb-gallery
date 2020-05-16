@@ -16,9 +16,11 @@ config.system.port = 3013;
 
 config.site = {};
 
+config.site.itemsPerPage = 12;
+
 config.site.gallerytabs = ["Main","Secondary"];
 
-config.site.optionalFields = [
+let mainOptionalFields = [
 	{
 		"name":"textfield1",
 		"display":"Text Field",
@@ -31,5 +33,9 @@ config.site.optionalFields = [
 		"options":["Checkbox 1","Checkbox 2"]
 	}
 ];
+
+
+
+config.site.optionalFields = [mainOptionalFields, mainOptionalFields]
 
 module.exports = config;

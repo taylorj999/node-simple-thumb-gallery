@@ -1,4 +1,4 @@
-var express = require('express')
+const express = require('express')
   , app = express()
   , MongoClient = require('mongodb').MongoClient
   , routes = require('./routes')
@@ -6,7 +6,19 @@ var express = require('express')
   , config = require('./config/config')
   , bodyParser = require('body-parser')
   , expressSession = require('express-session')
+  , formData = require("express-form-data")
+  , os = require("os")
   , MongoDBStore = require('connect-mongodb-session')(expressSession);
+
+/**
+ * Options are the same as multiparty takes.
+ * But there is a new option "autoClean" to clean all files in "uploadDir" folder after the response.
+ * By default, it is "false".
+ */
+const expressFormDataOptions = {
+  uploadDir: os.tmpdir(),
+  autoClean: true
+};
 
 MongoClient.connect(config.system.mongoConnectString, { useUnifiedTopology: true }, function(err, client) {
     "use strict";
@@ -15,7 +27,7 @@ MongoClient.connect(config.system.mongoConnectString, { useUnifiedTopology: true
     var db = client.db();
     
     app.use(express.static(path.join(__dirname, "public")));
-//    app.use(express.static(path.join(__dirname, "images")));
+    app.use(express.static(path.join(__dirname, "images")));
 
  // view engine setup
     app.set('views', path.join(__dirname, 'views'));
@@ -25,6 +37,15 @@ MongoClient.connect(config.system.mongoConnectString, { useUnifiedTopology: true
     // https://www.npmjs.com/package/body-parser
     app.use(bodyParser.urlencoded({'extended':false}));
  
+    // parse data with connect-multiparty. 
+    app.use(formData.parse(expressFormDataOptions));
+    // delete from the request all empty files (size == 0)
+    app.use(formData.format());
+    // change the file objects to fs.ReadStream 
+    app.use(formData.stream());
+    // union the body and the files
+    app.use(formData.union());
+    
     // Session middleware is not automatically included with express and has
     // to be initialized seperately
     var store = new MongoDBStore({
@@ -34,7 +55,7 @@ MongoClient.connect(config.system.mongoConnectString, { useUnifiedTopology: true
     
     app.use(expressSession({secret: config.system.sessionKey, resave: false, 
 		store: store, saveUninitialized: false}));
-    
+        
     routes(app, db);
     
     app.set('port', process.env.PORT || config.system.port);

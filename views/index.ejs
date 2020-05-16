@@ -4,10 +4,19 @@
  <%- include('partials/header', {'page': page}) %>
 </head>
 <body>
- <% if (galleries.length > 1) { %>
+ <% if ((galleries.length > 1) && (gallery === "Select")) { %>
    <%- include('partials/multigallerymenu',{'galleries':galleries}) %>
  <% } %>
- <%- include('partials/mainmenu') %>
-TEST
+ <% if (gallery != "Select") { %>
+   <%- include('partials/mainmenu', {'active':'','gallery':gallery}) %>
+ <% } %>
+<div class="container">
+ <% if (errorMsg.length > 0) { %>
+   <div class="alert alert-warning" role="alert">
+      <%=errorMsg%>
+   </div>
+ <% } %>
+<%- include('partials/searchbox', {'optionalFields':optionalFields,'values':{}}) %>
+</div>
 </body>
 </html>
