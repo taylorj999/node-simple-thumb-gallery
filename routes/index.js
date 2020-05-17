@@ -90,15 +90,15 @@ module.exports = exports = function(app, db) {
 				pageParams["page"] = "index"; pageParams["gallery"] = "Select"; pageParams["errorMsg"] = "Invalid gallery!";
 				return res.render('index',pageParams);
 			}
-			let searchParams = null;
+			let searchParams = {};
 			if (getVariableParameter(req,"search") && getVariableParameter(req,"search") === "new") {
 				clearSessionVariable(req,"searchParams");
 				searchParams = getSearchParameters(req,config.site.optionalFields[galleryIndex]);
 				setSessionVariable(req,"searchParams",searchParams);
-			} else {
+			} else if (hasValue(getSessionVariable(req,"searchParams"))){
 				searchParams = getSessionVariable(req,"searchParams");
 			}
-			console.log(JSON.stringify(searchParams));
+//			console.log(JSON.stringify(searchParams));
 			let searchObj = new Search(db, config);
 			pageParams["page"] = "search"; pageParams["gallery"] = gallery; pageParams["optionalFields"] = config.site.optionalFields[galleryIndex]; 
 			pageParams["searchParams"] = searchParams;
