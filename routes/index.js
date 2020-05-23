@@ -12,7 +12,7 @@ module.exports = exports = function(app, db) {
 
 	
 	app.get('/',function(req,res) {
-		let pageParams = {"page":"","errorMsg":"","gallery":"","galleries":config.site.gallerytabs,"optionalFields":{}};
+		let pageParams = {"page":"","errorMsg":"","gallery":"","galleries":config.site.gallerytabs,"optionalFields":{},"searchPage":""};
 		let gallery = getVariableParameter(req,"gallery");
 		if (gallery != undefined && gallery != null) {
 			if (!hasValue(gallery)) {
@@ -71,7 +71,7 @@ module.exports = exports = function(app, db) {
 			           })
 			           .then((result) => {
 			   			   console.log(JSON.stringify(result));
-			   			   pageParams["result"] = result; pageParams["page"] = "edit";
+			   			   pageParams["result"] = result; pageParams["page"] = "edit"; pageParams["imageUrl"] = "";
 			   			   return res.render('edit',pageParams);
 			           })
 			           .catch(err => { pageParams["errorMsg"] = err.message; return res.render('index',pageParams)});
@@ -90,10 +90,13 @@ module.exports = exports = function(app, db) {
 				pageParams["page"] = "index"; pageParams["gallery"] = "Select"; pageParams["errorMsg"] = "Invalid gallery!";
 				return res.render('index',pageParams);
 			}
+			let searchPage = getVariableParameter(req,"searchPage");
+			if (!hasValue(searchPage)) { searchPage = "1"; }
 			let searchParams = {};
 			if (getVariableParameter(req,"search") && getVariableParameter(req,"search") === "new") {
 				clearSessionVariable(req,"searchParams");
 				searchParams = getSearchParameters(req,config.site.optionalFields[galleryIndex]);
+				searchPage = "1";
 				setSessionVariable(req,"searchParams",searchParams);
 			} else if (hasValue(getSessionVariable(req,"searchParams"))){
 				searchParams = getSessionVariable(req,"searchParams");
@@ -101,9 +104,9 @@ module.exports = exports = function(app, db) {
 //			console.log(JSON.stringify(searchParams));
 			let searchObj = new Search(db, config);
 			pageParams["page"] = "search"; pageParams["gallery"] = gallery; pageParams["optionalFields"] = config.site.optionalFields[galleryIndex]; 
-			pageParams["searchParams"] = searchParams;
-			searchObj.doSearch(gallery,searchParams,config.site.optionalFields[galleryIndex],"1",{})
-			         .then((result) => { 
+			pageParams["searchParams"] = searchParams; pageParams["searchPage"] = searchPage; pageParams["itemsPerPage"] = config.site.itemsPerPage;
+			searchObj.doSearch(gallery,searchParams,config.site.optionalFields[galleryIndex],searchPage,{})
+			         .then((result) => {
 			        	 				 if (!hasValue(result)) result = {};
 			        	                 console.log(JSON.stringify(result));
 			        	                 if (result["count"] == 0) { pageParams["errorMsg"] = "No results for search parameters"; }
@@ -141,8 +144,7 @@ module.exports = exports = function(app, db) {
 		let gallery = getVariable(req,"gallery");
 		if (hasValue(gallery)) { pageParams["gallery"] = gallery; }
 		if (!hasValue(getVariableParameter(req,"id"))) {
-			pageParams["page"] = "index"; pageParams["errorMsg"] = "No id value supplied to /edit!";
-			return res.render('index',pageParams);
+			return renderIndexPageForError(res,"No id value supplied to /edit!",pageParams);
 		} else {
 			let searchObj = new Search(db,config);
 			searchObj.view(getVariableParameter(req,"id"))
@@ -152,18 +154,19 @@ module.exports = exports = function(app, db) {
 			        	 pageParams["page"] = "edit";
 			        	 if (!hasValue(pageParams["gallery"])) { pageParams["gallery"] = result.gallery; setSessionVariable(req,"gallery",result.gallery);}
 			        	 pageParams["optionalFields"] = config.site.optionalFields[config.site.gallerytabs.indexOf(result.gallery)];
+			        	 if (hasValue(getVariableParameter(req,"imageUrl"))) { pageParams["imageUrl"] = getVariableParameter(req,"imageUrl"); } else { pageParams["imageUrl"] = ""; }
 			        	 return res.render('edit',pageParams);
 			         })
-			         .catch((err) => { pageParams["errorMsg"] = err.message; return res.render('index',pageParams); });
+			         .catch((err) => { return renderIndexPageForError(res,err.message,pageParams); });
 		}
 	});
 	
 	app.post('/edit',function(req,res) {
-		let pageParams = {"page":"","errorMsg":"","gallery":"","galleries":config.site.gallerytabs,"optionalFields":{}};
+		let pageParams = {"page":"","errorMsg":"","gallery":"","galleries":config.site.gallerytabs,"optionalFields":{},"imageUrl":""};
 		let gallery = getVariable(req,"gallery");
 		if (!hasValue(gallery)) {
-			pageParams["page"] = "index"; pageParams["gallery"] = "Select"; pageParams["errorMsg"] = "No gallery selected!";
-			return res.render('index',pageParams);
+			pageParams["gallery"] = "Select";
+			return renderIndexPageForError(res,"No gallery selected!",pageParams);
 		} else {
 			let galleryIndex = config.site.gallerytabs.indexOf(gallery);
 			if (galleryIndex === -1) {
@@ -187,6 +190,7 @@ module.exports = exports = function(app, db) {
 				    			   let fileObj = new Files(db);
 				    			   return fileObj.addFromForm(getVariableParameter(req,"id"),req.files["file"]);
 				    		   } else if (hasValue(getVariableParameter(req,"thumbnailUrl"))) {
+				    			   pageParams["imageUrl"] = getVariableParameter(req,"thumbnailUrl"); // recover imageUrl in case of loader error
 				    			   let fileObj = new Files(db);
 				    			   return fileObj.addFromURL(getVariableParameter(req,"id"),getVariableParameter(req,"thumbnailUrl"));
 				    		   } else {
@@ -244,6 +248,11 @@ module.exports = exports = function(app, db) {
 	
 };
 
+function renderIndexPageForError(res,error,pageParams) {
+	pageParams["page"] = "index"; pageParams["errorMsg"] = error; pageParams["searchPage"] = "";
+	return res.render('index',pageParams);
+}
+
 function getVariable(req,varName) {
 	if (varName in req.session) {
 		return req.session[varName];
@@ -256,6 +265,8 @@ function getVariable(req,varName) {
 }
 
 function getVariableParameter(req,varName) {
+	if (req.body === undefined) { console.log("Invalid value in request object"); return null; }
+	
 	if (varName in req.body) {
 		return req.body[varName];
 	} else if (varName in req.query) {

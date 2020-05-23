@@ -1,6 +1,6 @@
 <SCRIPT>
 function resetForm() {
- var $searchform = $('#searchform')
+ let $searchform = $('#searchform');
     $($searchform).find("input[type=text] , textarea ").each(function(){
                 $(this).val('');            
     });
@@ -11,6 +11,7 @@ function resetForm() {
 </SCRIPT>
 
 <form method="GET" action="/search" id="searchform">
+  <input type="hidden" name="searchPage" value="<%=searchPage%>"/>
   <div class="form-group row">
     <label for="formfieldDesc" class="col-sm-2 col-form-label">Description (text):</label>
     <% let descValue = ""; 

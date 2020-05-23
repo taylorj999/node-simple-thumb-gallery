@@ -36,12 +36,13 @@ Search.prototype.doSearch = function doSearch(galleryName,searchParams,optionalF
 		}
 		console.log(whereClause);
 		let sortClause = {"dateChanged":-1};
+		let skipValue = (0+paginationPage-1) * self.options["limit"];
 		self.db.collection("galleryitem").aggregate([{'$match':whereClause},
 													 {'$project':{"title":1,"thumbnail":1,"dateChanged":1}},
 													 {'$sort':sortClause},
 													 {'$facet':
 							                          {
-							                    	    'data': [{'$match':{}},{'$skip':0},{'$limit':self.options["limit"]}],
+							                    	    'data': [{'$match':{}},{'$skip':skipValue},{'$limit':self.options["limit"]}],
 							                    	    'count': [{'$group':{'_id':null,'count':{'$sum':1}}}]
 							                    	  }
 							                         }])

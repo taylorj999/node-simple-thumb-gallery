@@ -2,6 +2,21 @@
 <html lang="en">
 <head>
  <%- include('partials/header', {'page': page}) %>
+<script type="text/javascript" src="/js/jquery.simplePagination.js"></script>
+<script>
+$( document ).ready(function() {
+    $("#pagination").pagination({
+        items: '<%=searchResults["count"]%>',
+        itemsOnPage: <%=itemsPerPage%>,
+        cssStyle: 'light-theme',
+        currentPage: '<%=searchPage%>',
+        onPageClick: function (pageNum) {
+        	$('input[name="searchPage"]').val(pageNum);
+        	document.forms[0].submit();
+        }
+    });
+});
+</script>
 </head>
 <body>
  <%- include('partials/mainmenu', {'active':'search','gallery':gallery}) %>
@@ -19,8 +34,13 @@
 </p>
 <div class="collapse" id="collapseSearch">
 <% } %>
-<%- include('partials/searchbox', {'optionalFields':optionalFields,'values':searchParams}) %>
+<%- include('partials/searchbox', {'optionalFields':optionalFields,'values':searchParams,'searchPage':searchPage}) %>
 <% if (searchResults.count > 0) { %>
+</div>
+<div class="row">
+    <div class="col d-flex justify-content-end">
+      <div class="pagination" id="pagination"></div>
+    </div>
 </div>
 <div class="row">
   <% for (let x=0;x<searchResults.data.length;x++) {
