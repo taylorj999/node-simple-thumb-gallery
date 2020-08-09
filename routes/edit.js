@@ -32,7 +32,7 @@ Edit.prototype.update = function update(id,updateParams,optionalFields) {
 			}
 		}
 		updateClause["$currentDate"] = {"dateChanged":true};
-		console.log(JSON.stringify(updateClause));
+		if (config.system.debug) console.log(JSON.stringify(updateClause));
 		self.db.collection("galleryitem").findOneAndUpdate(whereClause,updateClause,{'returnOriginal':false,"returnNewDocument":true})
 		  .then((res) => { console.log(JSON.stringify(res.value)); resolve(res.value); })
 		  .catch((err) => { reject(new Error("Error inserting gallery item!\n" + err.message)); });

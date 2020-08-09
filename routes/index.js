@@ -70,7 +70,7 @@ module.exports = exports = function(app, db) {
 			        	   return searchObj.view(result)
 			           })
 			           .then((result) => {
-			   			   console.log(JSON.stringify(result));
+			   			   if (config.system.debug) console.log(JSON.stringify(result));
 			   			   pageParams["result"] = result; pageParams["page"] = "edit"; pageParams["imageUrl"] = "";
 			   			   return res.render('edit',pageParams);
 			           })
@@ -108,7 +108,7 @@ module.exports = exports = function(app, db) {
 			searchObj.doSearch(gallery,searchParams,config.site.optionalFields[galleryIndex],searchPage,{})
 			         .then((result) => {
 			        	 				 if (!hasValue(result)) result = {};
-			        	                 console.log(JSON.stringify(result));
+			        	 				 if (config.system.debug) console.log(JSON.stringify(result));
 			        	                 if (result["count"] == 0) { pageParams["errorMsg"] = "No results for search parameters"; }
 			        	                 pageParams["searchResults"] = result; 
 			        	                 return res.render('search',pageParams); 
@@ -128,7 +128,7 @@ module.exports = exports = function(app, db) {
 			let searchObj = new Search(db,config);
 			searchObj.view(getVariableParameter(req,"id"))
 			         .then((result) => {
-			        	 console.log(JSON.stringify(result));
+			        	 if (config.system.debug) console.log(JSON.stringify(result));
 			        	 pageParams["result"] = result;
 			        	 pageParams["page"] = "view";
 			        	 if (!hasValue(pageParams["gallery"])) { pageParams["gallery"] = result.gallery; }
@@ -149,7 +149,7 @@ module.exports = exports = function(app, db) {
 			let searchObj = new Search(db,config);
 			searchObj.view(getVariableParameter(req,"id"))
 			         .then((result) => {
-			        	 console.log(JSON.stringify(result));
+			        	 if (config.system.debug) console.log(JSON.stringify(result));
 			        	 pageParams["result"] = result;
 			        	 pageParams["page"] = "edit";
 			        	 if (!hasValue(pageParams["gallery"])) { pageParams["gallery"] = result.gallery; setSessionVariable(req,"gallery",result.gallery);}
