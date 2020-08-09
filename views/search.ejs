@@ -46,13 +46,14 @@ $( document ).ready(function() {
   <% for (let x=0;x<searchResults.data.length;x++) {
        let result = searchResults.data[x]; %>
      <% if (x>1 && x%6==0) { %> </div><div class="row pt-4"> <% } %>
-     <div class="col-sm-2 border">
+     <div class="col-2 border">
+     <p>
        <% if ("thumbnail" in result) { %>
          <a href="/view?id=<%=result._id%>"><img class="w-100 h-100" src="/image?id=<%=result.thumbnail%>"/></a>
        <% } else { %>
          <a href="/view?id=<%=result._id%>"><img class="w-100 h-100" src="/images/No_image_available.svg"/></a>
        <% } %>
-       <p class="text-center"><%=result.title%></p>
+       <font size="-1"><%=result.title%></font></p>
      </div>
   <% } %>
 </div>

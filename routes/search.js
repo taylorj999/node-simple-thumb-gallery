@@ -20,8 +20,12 @@ Search.prototype.doSearch = function doSearch(galleryName,searchParams,optionalF
 	let self = this;
 	return new Promise((resolve,reject) => {
 		let whereClause = {"gallery":{"$eq":galleryName}};
+		let sortClause = {"dateChanged":-1};
+		let projectClause = {"title":1,"thumbnail":1,"dateChanged":1};
 		if ("description" in searchParams) {
 			whereClause["$text"] = {"$search":searchParams["description"]};
+			projectClause["score"] = {"$meta":"textScore"};
+			sortClause = { "score": { "$meta": "textScore" }, "dateChanged":-1 };
 		}
 		for (let x=0;x<optionalFields.length;x++) {
 			let field = optionalFields[x];
@@ -34,11 +38,10 @@ Search.prototype.doSearch = function doSearch(galleryName,searchParams,optionalF
 				}
 			}
 		}
-		console.log(whereClause);
-		let sortClause = {"dateChanged":-1};
+		// console.log(whereClause);
 		let skipValue = (0+paginationPage-1) * self.options["limit"];
 		self.db.collection("galleryitem").aggregate([{'$match':whereClause},
-													 {'$project':{"title":1,"thumbnail":1,"dateChanged":1}},
+													 {'$project':projectClause},
 													 {'$sort':sortClause},
 													 {'$facet':
 							                          {
