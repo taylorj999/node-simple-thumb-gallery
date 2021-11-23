@@ -20,7 +20,7 @@
   "dependencies": {
     "axios": "^0.21.2",
     "bootstrap": "4.4.1",
-    "connect-mongodb-session": "^2.3.1",
+    "connect-mongodb-session": "^3.1.1",
     "ejs": "^3.1.2",
     "express": "4.17.1",
     "express-form-data": "^2.0.13",
