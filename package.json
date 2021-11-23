@@ -18,7 +18,7 @@
   "license": "MIT",
   "readmeFilename": "README.md",
   "dependencies": {
-    "axios": "^0.21.1",
+    "axios": "^0.21.2",
     "bootstrap": "4.4.1",
     "connect-mongodb-session": "^2.3.1",
     "ejs": "^3.1.2",
