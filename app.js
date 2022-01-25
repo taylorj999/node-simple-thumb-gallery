@@ -3,12 +3,12 @@ const express = require('express')
   , MongoClient = require('mongodb').MongoClient
   , routes = require('./routes')
   , path = require('path')
-  , config = require('./config/config')
   , bodyParser = require('body-parser')
   , expressSession = require('express-session')
   , formData = require("express-form-data")
   , os = require("os")
   , MongoDBStore = require('connect-mongodb-session')(expressSession);
+var config = require('./config/config');
 
 /**
  * Options are the same as multiparty takes.
@@ -45,6 +45,27 @@ MongoClient.connect(config.system.mongoConnectString, { useUnifiedTopology: true
     app.use(formData.stream());
     // union the body and the files
     app.use(formData.union());
+    
+    console.log("Attempting to load configuration file [config.local]...");
+    try {
+    	let localConfig = null;
+    	try {
+    		localConfig = require('./config/config.local');
+    	} catch (e1) {
+    		console.log("No local configuration file found...");
+    	}
+    	if (localConfig !== null) {
+    		Object.keys(localConfig.system).forEach((keySystem) => {
+    			  config.system[keySystem] = localConfig.system[keySystem];
+    		});
+    		Object.keys(localConfig.site).forEach((keySite) => {
+  			  config.system[keySite] = localConfig.system[keySite];
+    		});
+    	}
+    	console.log("Local config file loaded...");
+    } catch (e2) {
+    	console.log("Error loading local configuration file:\n" + e2);
+    }
     
     // Session middleware is not automatically included with express and has
     // to be initialized seperately
