@@ -1,3 +1,24 @@
+<script>
+ var mdHtml = window.markdownit("commonmark");
+
+ function updatePreviewResult() {
+   if (!previewVisible) return;
+   var mdSource = $("#formfieldDesc").val();
+   $("#previewHtml").html(mdHtml.render(mdSource));
+ }
+ 
+ var previewVisible=false;
+ 
+ function togglePreviewVisible() {
+    previewVisible=!previewVisible;
+    if (!previewVisible) $("#previewHtml").hide();
+    else {
+       $("#previewHtml").show();
+       updatePreviewResult();
+    }
+ }
+</script>
+
 <form method="POST" enctype="multipart/form-data" action="/edit">
   <input type="hidden" name="id" value="<%=result._id%>"/>
     <% if ('thumbnail' in result) { %>
@@ -18,11 +39,15 @@
     <input type="text" name="title" class="form-control col-sm-10" id="formFieldTitle" aria-describedBy="helpTitle" value="<%=result.title%>"/>
   </div>
   <div class="form-group row">
-    <label for="formfieldDesc" class="col-sm-2 col-form-label">Description (text):</label>
-    <textarea name="description" class="form-control col-sm-10" id="formfieldDesc" aria-describedby="helpDescription" rows="10"><%=result.description%></textarea>
+    <label for="formfieldDesc" class="col-sm-2 col-form-label">Description (text):
+    <a class="btn btn-sm" href="#formFieldDesc" onClick="togglePreviewVisible()">Preview</a>
+    </label>
+    <textarea name="description" class="form-control col-sm-10" id="formfieldDesc" aria-describedby="helpDescription" rows="10" onChange="updatePreviewResult()"><%=result.description%></textarea>
+  </div>
+  <div class="form-group row border">
+    <p class="text-left" id="previewHtml" style="display:none;"></p>
   </div>
 
-
 <%- include('optionalformfields', {'mode':'edit','values':result.optionalFields}) %>
-<button class="btn btn-primary" type="submit">Submit form</button>
+<button class="btn btn-primary" type="submit">Save Changes</button>
 </form>

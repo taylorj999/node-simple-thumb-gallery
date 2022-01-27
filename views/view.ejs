@@ -2,6 +2,15 @@
 <html lang="en">
 <head>
  <%- include('partials/header', {'page': page}) %>
+<script>
+ var mdHtml = window.markdownit("commonmark");
+
+ var rawDescription = `<%=result.description%>`;
+
+ $(document).ready(function() {
+   $("#descriptionBox").html(mdHtml.render(rawDescription));
+ });
+</script>
 </head>
 <body>
  <%- include('partials/mainmenu', {'active':'view','gallery':gallery,'id':result._id}) %>
@@ -26,8 +35,7 @@
   </div>
   <hr/>
   <div>
-    <h3>Description</h3>
-    <p class="text-left"><%=result.description%></p>
+    <p class="text-left" id="descriptionBox"></p>
   </div>
 </div>
 </body>

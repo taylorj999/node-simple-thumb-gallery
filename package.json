@@ -4,7 +4,7 @@
   "description": "node-simple-thumb-gallery",
   "scripts": {
     "setup-css": "copyfiles -f \"node_modules/bootstrap/dist/css/bootstrap.min.css\" \"node_modules/bootstrap/dist/css/bootstrap.min.css.map\" public/css/",
-    "setup-js": "copyfiles -f \"node_modules/bootstrap/dist/js/bootstrap.min.js\" \"node_modules/jquery/dist/jquery.min.js\" public/js/",
+    "setup-js": "copyfiles -f \"node_modules/bootstrap/dist/js/bootstrap.min.js\" \"node_modules/bootstrap/dist/js/bootstrap.min.js.map\" \"node_modules/jquery/dist/jquery.min.js\" \"node_modules/markdown-it/dist/markdown-it.min.js\" public/js/",
     "setup": "npm run setup-css && npm run setup-js",
     "start": "nodemon app.js"
   },
@@ -25,10 +25,12 @@
     "express": "4.17.1",
     "express-form-data": "^2.0.13",
     "express-session": "^1.17.1",
-    "jquery": "3.5.1",
+    "jquery": "latest",
+    "markdown-it": "^12.3.2",
     "mongodb": "^3.3.3",
     "popper.js": "^1.16.1",
     "sharp": "^0.25.2",
+    "turndown": "^7.1.1",
     "validator": "13.7.0"
   }
 }
