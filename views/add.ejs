@@ -1,17 +1,17 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
- <%- include('partials/header', {'page': page}) %>
+ <%- include('partials/header') %>
 </head>
 <body>
- <%- include('partials/mainmenu', {'active':'add','gallery':gallery}) %>
+ <%- include('partials/mainmenu') %>
  <% if (errorMsg.length > 0) { %>
    <div class="alert alert-warning" role="alert">
       <%=errorMsg%>
    </div>
  <% } %>
 <div class="container">
-  <%- include('partials/addbox', {'optionalFields':optionalFields}) %>
+  <%- include('partials/addbox') %>
 </div>
 </body>
 </html>

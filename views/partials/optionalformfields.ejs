@@ -1,4 +1,8 @@
-<% for (let x=0;x<optionalFields.length;x++) { 
+<% 
+  if (Array.isArray(galleryConfig.optionalFields)) {
+    optionalFields = galleryConfig.optionalFields;
+  }
+  for (let x=0;x<optionalFields.length;x++) { 
      let field = optionalFields[x]; 
      %>
   <% if (field.type === "text" || (field.type === "url" && (page === "edit" || page==="add"))) { 
@@ -38,29 +42,43 @@
     <% } %>
     </div>
   </div>
+  <% } else if (field.type === "arblist") { 
+%>
+  <div class="form-group row">
+    <div class="col-sm-2 col-form-label"><%=field.display%></div>
+    <div class="col-sm-10">
+      <div class="tag-editor w-100 pl-2 pt-2 pb-1 bg-light border rounded" data-field-id="<%=field.name%>">
+	  	<span class="tags">
+  	    <% if (Array.isArray(values[field.name])) {
+    	     for (let z=0; z<values[field.name].length; z++) { %>
+			<span class="tag">
+			  <span class="tag-data"><%=values[field.name][z]%></span>
+			</span>
+  	    <%  } 
+  	      } %>
+        </span>
+      </div>
+    </div>
+	<input id="<%=field.name%>" type="hidden" size="50" name="<%=field.name%>" value="[<%=values[field.name]%>]"/>
+  </div>
   <% } else if (field.type === "taglist") { 
-       let checkList = []; 
-       if (field.name in values) {
-         if (!!(values[field.name]) && (values[field.name]).constructor === Array) {
-           checkList = values[field.name];
-         }
-       }
   %>
   <div class="form-group row">
-    <label for="formfield<%=field.name%>" class="col-sm-2 col-form-label"><%=field.display%></label>
+    <div class="col-sm-2 col-form-label"><%=field.display%></div>
     <div class="col-sm-10">
-    <% for (let y=0;y<field.options.length;y++) { 
-         let isChecked = "";
-         if (checkList.indexOf(field.options[y]) != -1) {
-           isChecked = "CHECKED";
-         }
-    %>
-      <div class="form-check form-check-inline">
-        <input class="form-check-input" type="checkbox" id="check<%=field.name%><%=y%>" name="<%=field.name%>" value="<%=field.options[y]%>" <%=isChecked%>>
-        <label class="form-check-label" for="check<%=field.name%><%=y%>"><%=field.options[y]%></label>
+      <div class="tag-editor w-100 pl-2 pt-2 pb-1 bg-light border rounded" data-field-id="<%=field.name%>">
+	  	<span class="tags">
+  	    <% if (Array.isArray(values[field.name])) {
+    	     for (let z=0; z<values[field.name].length; z++) { %>
+			<span class="tag">
+			  <span class="tag-data"><%=values[field.name][z]%></span>
+			</span>
+  	    <%  } 
+  	      } %>
+        </span>
       </div>
-    <% } %>
     </div>
+	<input id="<%=field.name%>" type="hidden" size="50" name="<%=field.name%>" value="[<%=values[field.name]%>]"/>
   </div>
   <% } %>
 <% } %>

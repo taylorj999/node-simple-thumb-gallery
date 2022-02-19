@@ -7,7 +7,9 @@ const express = require('express')
   , expressSession = require('express-session')
   , formData = require("express-form-data")
   , os = require("os")
-  , MongoDBStore = require('connect-mongodb-session')(expressSession);
+  , MongoDBStore = require('connect-mongodb-session')(expressSession)
+  , ConfigLoader = require('./routes/configLoader').ConfigLoader
+  , ConfigUtils = require('./routes/configUtils').ConfigUtils;
 var config = require('./config/config');
 
 /**
@@ -46,43 +48,31 @@ MongoClient.connect(config.system.mongoConnectString, { useUnifiedTopology: true
     // union the body and the files
     app.use(formData.union());
     
-    console.log("Attempting to load configuration file [config.local]...");
-    try {
-    	let localConfig = null;
-    	try {
-    		localConfig = require('./config/config.local');
-    	} catch (e1) {
-    		console.log("No local configuration file found...");
-    	}
-    	if (localConfig !== null) {
-    		Object.keys(localConfig.system).forEach((keySystem) => {
-    			  config.system[keySystem] = localConfig.system[keySystem];
-    		});
-    		Object.keys(localConfig.site).forEach((keySite) => {
-  			  config.system[keySite] = localConfig.system[keySite];
-    		});
-    	}
-    	console.log("Local config file loaded...");
-    } catch (e2) {
-    	console.log("Error loading local configuration file:\n" + e2);
-    }
+    let configLoader = new ConfigLoader(db);
     
-    // Session middleware is not automatically included with express and has
-    // to be initialized seperately
-    var store = new MongoDBStore({
-    	  uri: config.system.mongoConnectString,
-    	  collection: 'sessions'
-    	});
-    
-    app.use(expressSession({secret: config.system.sessionKey, resave: false, 
-		store: store, saveUninitialized: false}));
-        
-    routes(app, db);
-    
-    app.set('port', process.env.PORT || config.system.port);
-    app.listen(app.get('port'), function(err) {
-    	if (err) return console.log('something bad happened', err);
-    	console.log('Express server listening on port ' + app.get('port'));
-    });
+    configLoader.load()
+       .then((config) => {
+	    
+    	let configUtils = new ConfigUtils();
+    	console.log(configUtils.findGalleryById(config,"0"));
 
+    	// Session middleware is not automatically included with express and has
+	    // to be initialized seperately
+	    var store = new MongoDBStore({
+	    	  uri: config.system.mongoConnectString,
+	    	  collection: 'sessions'
+	    	});
+	    
+	    app.use(expressSession({secret: config.system.sessionKey, resave: false, 
+			store: store, saveUninitialized: false}));
+	        
+	    routes(app, db, config);
+	    
+	    app.set('port', process.env.PORT || config.system.port);
+	    app.listen(app.get('port'), function(err) {
+	    	if (err) return console.log('something bad happened', err);
+	    	console.log('Express server listening on port ' + app.get('port'));
+	    });
+       })
+       .catch((err) => { console.log(err); exit(0); });
 });

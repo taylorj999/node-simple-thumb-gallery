@@ -10,6 +10,11 @@ function resetForm() {
 }
 </SCRIPT>
 
+<%
+  let searchPage = params["searchPage"];
+  if (searchPage == null || searchPage == undefined) searchPage = "0";
+%>
+
 <form method="GET" action="/search" id="searchform">
   <input type="hidden" name="searchPage" value="<%=searchPage%>"/>
   <div class="form-group row">

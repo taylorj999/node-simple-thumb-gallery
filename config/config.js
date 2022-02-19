@@ -14,11 +14,14 @@ config.system.debug = false;
 
 config.system.port = 3013;
 
+//define specific configuration document in the database "config" collection
+config.system.dynamicConfigId = null;
+
 config.site = {};
 
 config.site.itemsPerPage = 12;
 
-config.site.gallerytabs = ["Main","Secondary"];
+config.site.defaultGallery = "0";
 
 let mainOptionalFields = [
 	{
@@ -34,8 +37,8 @@ let mainOptionalFields = [
 	}
 ];
 
-
-
-config.site.optionalFields = [mainOptionalFields, mainOptionalFields]
+config.site.galleries = [
+	{"_id":"0","galleryName":"Demo","galleryVisible":true, "optionalFields":mainOptionalFields}
+];
 
 module.exports = config;

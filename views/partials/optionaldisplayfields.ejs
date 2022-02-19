@@ -32,6 +32,16 @@
   <%   for (let y=0;y<checkList.length;y++) {
          if (y > 0) { %>, <% } %><%=checkList[y]%><%   } %>
      </span></p>
+  <% } else if (field.type === "arblist" || field.type === "taglist") { 
+       let fieldValue = "";
+	   if (field.name in values) {
+	     if (!!(values[field.name]) && (values[field.name]).constructor === Array) {
+	       fieldValue = values[field.name].join(", ");
+	     }
+	   }       
+  %>
+  <p><span class="font-weight-bold"><%=field.display%>:</span>
+     <span><%=fieldValue%></span></p>
   <% } %>
 <% } %>  
      

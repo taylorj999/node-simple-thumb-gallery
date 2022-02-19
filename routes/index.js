@@ -1,70 +1,64 @@
-var config = require('../config/config')
-   ,validator = require('validator')
+var validator = require('validator')
    ,path = require('path')
    ,Galleryitem = require('./galleryitem').Galleryitem
    ,Search = require("./search").Search
    ,Edit = require("./edit").Edit
    ,Files = require("./files").Files
+   ,DynamicConfig = require("./dynamicConfig").DynamicConfig
    ,ObjectId = require('mongodb').ObjectID;
 
-module.exports = exports = function(app, db) {
+module.exports = exports = function(app, db, config) {
 	"use strict";
-
+	let dynamicConfig = new DynamicConfig(db);
 	
 	app.get('/',function(req,res) {
-		let pageParams = {"page":"","errorMsg":"","gallery":"","galleries":config.site.gallerytabs,"optionalFields":{},"searchPage":""};
-		let gallery = getVariableParameter(req,"gallery");
-		if (gallery != undefined && gallery != null) {
-			if (!hasValue(gallery)) {
-				clearSessionVariable(req,"gallery");
-				gallery = null;
-			} else {
-				setSessionVariable(req,"gallery",gallery);
-			}
-		} else {
-			gallery = getVariable(req,"gallery");
+		let pageParams = getDefaultPageParams(config, req);
+//		let pageParams = {"page":"","errorMsg":"","gallery":"","galleries":config.site.gallerytabs,"optionalFields":{},"searchPage":""};
+		let galleryConfig = dynamicConfig.findGalleryConfigById(config,pageParams["gallery"]);
+		if (galleryConfig!=null) {
+			pageParams["galleryConfig"] = galleryConfig;
 		}
-		if (gallery === undefined || gallery === null) {
-			gallery = "Select";
-		}
-		pageParams["page"] = "index"; pageParams["gallery"] = gallery;
+		pageParams["page"] = "index";
 		return res.render('index', pageParams);
 	});
 	
 	app.get('/add',function(req,res) {
-		let pageParams = {"page":"","errorMsg":"","gallery":"","galleries":config.site.gallerytabs,"optionalFields":{}};
-		let gallery = getVariable(req,"gallery");
-		if (!hasValue(gallery)) {
-			pageParams["page"] = "index"; pageParams["gallery"] = "Select"; pageParams["errorMsg"] = "No gallery selected!";
+		let pageParams = getDefaultPageParams(config, req);
+//		let pageParams = {"page":"","errorMsg":"","gallery":"","galleries":config.site.gallerytabs,"optionalFields":{}};
+		if (!hasValue(pageParams["gallery"])) {
+			pageParams["page"] = "index"; pageParams["gallery"] = "-1"; pageParams["errorMsg"] = "No gallery selected!";
 			return res.render('index',pageParams);
 		} else {
-			let galleryIndex = config.site.gallerytabs.indexOf(gallery);
-			if (galleryIndex === -1) {
-				pageParams["page"] = "index"; pageParams["gallery"] = "Select"; pageParams["errorMsg"] = "Invalid gallery!";
+			let galleryConfig = dynamicConfig.findGalleryConfigById(config,pageParams["gallery"]);
+			if (galleryConfig!=null) {
+				pageParams["galleryConfig"] = galleryConfig;
+			} else {
+				pageParams["page"] = "index"; pageParams["gallery"] = "-1"; pageParams["errorMsg"] = "Invalid gallery!";
 				return res.render('index',pageParams);
 			}
-			pageParams["page"] = "add"; pageParams["gallery"] = gallery; pageParams["optionalFields"] = config.site.optionalFields[galleryIndex];
+			pageParams["page"] = "add";
 			return res.render('add',pageParams);
 		}
 	});
 	
 	app.post('/add',function(req,res) {
-		let pageParams = {"page":"","errorMsg":"","gallery":"","galleries":config.site.gallerytabs,"optionalFields":{}};
-		let gallery = getVariable(req,"gallery");
-		if (!hasValue(gallery)) {
-			pageParams["page"] = "index"; pageParams["gallery"] = "Select"; pageParams["errorMsg"] = "No gallery selected!";
+		let pageParams = getDefaultPageParams(config, req);
+//		let pageParams = {"page":"","errorMsg":"","gallery":"","galleries":config.site.gallerytabs,"optionalFields":{}};
+		if (!hasValue(pageParams["gallery"])) {
+			pageParams["page"] = "index"; pageParams["gallery"] = "-1"; pageParams["errorMsg"] = "No gallery selected!";
 			return res.render('index',pageParams);
 		} else {
-			pageParams["gallery"] = gallery;
-			let galleryIndex = config.site.gallerytabs.indexOf(gallery);
-			if (galleryIndex === -1) {
-				pageParams["page"] = "index"; pageParams["gallery"] = "Select"; pageParams["errorMsg"] = "Invalid gallery!";
+			let galleryConfig = dynamicConfig.findGalleryConfigById(config,pageParams["gallery"]);
+			if (galleryConfig!=null) {
+				pageParams["galleryConfig"] = galleryConfig;
+			} else {
+				pageParams["page"] = "index"; pageParams["gallery"] = "-1"; pageParams["errorMsg"] = "Invalid gallery!";
 				return res.render('index',pageParams);
 			}
-			let addParams = getSearchParameters(req,config.site.optionalFields[galleryIndex]);
+			let addParams = getSearchParameters(req,galleryConfig.optionalFields);
 			let galleryItem = new Galleryitem(db);
-			pageParams["optionalFields"] = config.site.optionalFields[galleryIndex];
-			galleryItem.addGalleryItem(gallery,addParams,config.site.optionalFields[galleryIndex])
+			pageParams["optionalFields"] = galleryConfig.optionalFields;
+			galleryItem.addGalleryItem(pageParams["gallery"],addParams,galleryConfig.optionalFields)
 			           .then(result => { 
 			        	   let searchObj = new Search(db,config);
 			        	   return searchObj.view(result)
@@ -79,15 +73,17 @@ module.exports = exports = function(app, db) {
 	});
 	
 	app.use('/search',function(req,res) {
-		let pageParams = {"page":"","errorMsg":"","gallery":"","galleries":config.site.gallerytabs,"optionalFields":{}};
-		let gallery = getVariable(req,"gallery");
-		if (!hasValue(gallery)) {
-			pageParams["page"] = "index"; pageParams["gallery"] = "Select"; pageParams["errorMsg"] = "No gallery selected!";
+		let pageParams = getDefaultPageParams(config, req);
+//		let pageParams = {"page":"","errorMsg":"","gallery":"","galleries":config.site.gallerytabs,"optionalFields":{},"searchPage":""};
+		if (!hasValue(pageParams["gallery"])) {
+			pageParams["page"] = "index"; pageParams["gallery"] = "-1"; pageParams["errorMsg"] = "No gallery selected!";
 			return res.render('index',pageParams);
 		} else {
-			let galleryIndex = config.site.gallerytabs.indexOf(gallery);
-			if (galleryIndex === -1) {
-				pageParams["page"] = "index"; pageParams["gallery"] = "Select"; pageParams["errorMsg"] = "Invalid gallery!";
+			let galleryConfig = dynamicConfig.findGalleryConfigById(config,pageParams["gallery"]);
+			if (galleryConfig!=null) {
+				pageParams["galleryConfig"] = galleryConfig;
+			} else {
+				pageParams["page"] = "index"; pageParams["gallery"] = "-1"; pageParams["errorMsg"] = "Invalid gallery!";
 				return res.render('index',pageParams);
 			}
 			let searchPage = getVariableParameter(req,"searchPage");
@@ -95,7 +91,7 @@ module.exports = exports = function(app, db) {
 			let searchParams = {};
 			if (getVariableParameter(req,"search") && getVariableParameter(req,"search") === "new") {
 				clearSessionVariable(req,"searchParams");
-				searchParams = getSearchParameters(req,config.site.optionalFields[galleryIndex]);
+				searchParams = getSearchParameters(req,galleryConfig.optionalFields);
 				searchPage = "1";
 				setSessionVariable(req,"searchParams",searchParams);
 			} else if (hasValue(getSessionVariable(req,"searchParams"))){
@@ -103,9 +99,9 @@ module.exports = exports = function(app, db) {
 			}
 //			console.log(JSON.stringify(searchParams));
 			let searchObj = new Search(db, config);
-			pageParams["page"] = "search"; pageParams["gallery"] = gallery; pageParams["optionalFields"] = config.site.optionalFields[galleryIndex]; 
-			pageParams["searchParams"] = searchParams; pageParams["searchPage"] = searchPage; pageParams["itemsPerPage"] = config.site.itemsPerPage;
-			searchObj.doSearch(gallery,searchParams,config.site.optionalFields[galleryIndex],searchPage,{})
+			pageParams["page"] = "search";  pageParams["optionalFields"] = galleryConfig.optionalFields; 
+			pageParams["searchParams"] = searchParams; pageParams["params"]["searchPage"] = searchPage;
+			searchObj.doSearch(pageParams["gallery"],searchParams,galleryConfig.optionalFields,searchPage,{})
 			         .then((result) => {
 			        	 				 if (!hasValue(result)) result = {};
 			        	 				 if (config.system.debug) console.log(JSON.stringify(result));
@@ -118,9 +114,8 @@ module.exports = exports = function(app, db) {
 	});
 	
 	app.use('/view',function(req,res) {
-		let pageParams = {"page":"","errorMsg":"","gallery":"","galleries":config.site.gallerytabs,"optionalFields":{}};
-		let gallery = getVariable(req,"gallery");
-		if (hasValue(gallery)) { pageParams["gallery"] = gallery; }
+		let pageParams = getDefaultPageParams(config, req);
+//		let pageParams = {"page":"","errorMsg":"","gallery":"","galleries":config.site.gallerytabs,"optionalFields":{}};
 		if (!hasValue(getVariableParameter(req,"id"))) {
 			pageParams["page"] = "index"; pageParams["errorMsg"] = "No id value supplied to /view!";
 			return res.render('index',pageParams);
@@ -132,17 +127,80 @@ module.exports = exports = function(app, db) {
 			        	 pageParams["result"] = result;
 			        	 pageParams["page"] = "view";
 			        	 if (!hasValue(pageParams["gallery"])) { pageParams["gallery"] = result.gallery; }
-			        	 pageParams["optionalFields"] = config.site.optionalFields[config.site.gallerytabs.indexOf(result.gallery)];
+			 			 let galleryConfig = dynamicConfig.findGalleryConfigById(config,pageParams["gallery"]);
+			 			 if (galleryConfig!=null) {
+							pageParams["galleryConfig"] = galleryConfig;
+			        	    pageParams["optionalFields"] = galleryConfig.optionalFields;
+			 			 }
 			        	 return res.render('view',pageParams);
 			         })
 			         .catch((err) => { pageParams["errorMsg"] = err.message; return res.render('index',pageParams); });
 		}
 	});
 	
+	app.get('/config',function(req,res) {
+		let pageParams = getDefaultPageParams(config, req);
+		return res.render('config',pageParams);
+	});
+	
+	app.post('/config', function(req,res) {
+		let pageParams = getDefaultPageParams(config, req);
+		
+		let galleryId = null;
+		
+		if (!hasValue(getVariableParameter(req,"galleryId"))) {
+			pageParams["errorMsg"] = "Invalid form submission - could not find gallery id";
+		} else if (getVariableParameter(req,"galleryId") == "NEW") {
+			galleryId = new ObjectId().toString();
+		} else {
+			galleryId = getVariableParameter(req,"galleryId");
+		}
+		
+		let updateGalleryOptions = {"_id": galleryId, "galleryName": "Default", "galleryVisible": true, "optionalFields": []};
+		updateGalleryOptions.galleryName = getVariableParameter(req,"galleryName");
+		if (hasValue(getVariableParameter(req,"galleryVisible"))) updateGalleryOptions.galleryVisible = true;
+		else updateGalleryOptions.galleryVisible = false;
+		
+		let tempOptionalFields = {};
+		
+		for (var propName in req.body) {
+	        if (propName.startsWith("optionalFields_")) {
+	        	const propArray = propName.split("_");
+	        	const fieldName = propArray[1];
+	        	const fieldVar = propArray[2];
+	        	if (!hasValue(tempOptionalFields[fieldName])) tempOptionalFields[fieldName] = {"name":fieldName};
+	        	if (fieldVar=="options") {
+		        	tempOptionalFields[fieldName][fieldVar] = JSON.parse(req.body[propName]);
+	        	} else {
+	        		tempOptionalFields[fieldName][fieldVar] = req.body[propName];
+	        	}
+	        }
+		}
+		
+		for (var fieldName in tempOptionalFields) {
+			if (tempOptionalFields[fieldName]["name"].length > 0) {
+				updateGalleryOptions["optionalFields"].push(tempOptionalFields[fieldName]);
+			}
+		}
+		
+		console.log(JSON.stringify(updateGalleryOptions));
+		
+		dynamicConfig.updateConfig(config, galleryId, updateGalleryOptions)
+		             .then((updatedConfig) => {
+		            	 config = updatedConfig;
+		            	 pageParams["config"] = config.site;
+		            	 return res.render('config',pageParams);
+		             })
+		             .catch((err) => {
+		            	 console.log(err);
+		            	 pageParams["errorMsg"] = "Error updating configuration information - see server logs";
+		            	 return res.render('config',pageParams);
+		             });
+	});
+	
 	app.get('/edit',function(req,res) {
-		let pageParams = {"page":"","errorMsg":"","gallery":"","galleries":config.site.gallerytabs,"optionalFields":{}};
-		let gallery = getVariable(req,"gallery");
-		if (hasValue(gallery)) { pageParams["gallery"] = gallery; }
+		let pageParams = getDefaultPageParams(config, req);
+//		let pageParams = {"page":"","errorMsg":"","gallery":"","galleries":config.site.gallerytabs,"optionalFields":{}};
 		if (!hasValue(getVariableParameter(req,"id"))) {
 			return renderIndexPageForError(res,"No id value supplied to /edit!",pageParams);
 		} else {
@@ -153,7 +211,12 @@ module.exports = exports = function(app, db) {
 			        	 pageParams["result"] = result;
 			        	 pageParams["page"] = "edit";
 			        	 if (!hasValue(pageParams["gallery"])) { pageParams["gallery"] = result.gallery; setSessionVariable(req,"gallery",result.gallery);}
-			        	 pageParams["optionalFields"] = config.site.optionalFields[config.site.gallerytabs.indexOf(result.gallery)];
+			        	 
+			 			 let galleryConfig = dynamicConfig.findGalleryConfigById(config,pageParams["gallery"]);
+			 			 if (galleryConfig!=null) {
+							pageParams["galleryConfig"] = galleryConfig;
+			        	    pageParams["optionalFields"] = galleryConfig.optionalFields;
+			 			 }
 			        	 if (hasValue(getVariableParameter(req,"imageUrl"))) { pageParams["imageUrl"] = getVariableParameter(req,"imageUrl"); } else { pageParams["imageUrl"] = ""; }
 			        	 return res.render('edit',pageParams);
 			         })
@@ -162,27 +225,29 @@ module.exports = exports = function(app, db) {
 	});
 	
 	app.post('/edit',function(req,res) {
-		let pageParams = {"page":"","errorMsg":"","gallery":"","galleries":config.site.gallerytabs,"optionalFields":{},"imageUrl":""};
-		let gallery = getVariable(req,"gallery");
-		if (!hasValue(gallery)) {
-			pageParams["gallery"] = "Select";
+		let pageParams = getDefaultPageParams(config, req);		
+//		let pageParams = {"page":"","errorMsg":"","gallery":"","galleries":config.site.gallerytabs,"optionalFields":{},"imageUrl":""};
+		if (!hasValue(pageParams["gallery"])) {
+			pageParams["gallery"] = "-1";
 			return renderIndexPageForError(res,"No gallery selected!",pageParams);
 		} else {
-			let galleryIndex = config.site.gallerytabs.indexOf(gallery);
-			if (galleryIndex === -1) {
-				pageParams["page"] = "index"; pageParams["gallery"] = "Select"; pageParams["errorMsg"] = "Invalid gallery!";
+ 			 let galleryConfig = dynamicConfig.findGalleryConfigById(config,pageParams["gallery"]);
+ 			 if (galleryConfig!=null) {
+				pageParams["galleryConfig"] = galleryConfig;
+        	    pageParams["optionalFields"] = galleryConfig.optionalFields;
+ 			 } else {
+				pageParams["page"] = "index"; pageParams["gallery"] = "-1"; pageParams["errorMsg"] = "Invalid gallery!";
 				return res.render('index',pageParams);
 			}
 			if (!hasValue(getVariableParameter(req,"id"))) {
-				pageParams["page"] = "index"; pageParams["gallery"] = gallery; pageParams["errorMsg"] = "No id value supplied to /edit!";
+				pageParams["page"] = "index"; pageParams["errorMsg"] = "No id value supplied to /edit!";
 				return res.render('index',pageParams);
 			} else {
-				pageParams["gallery"] = gallery;
 				let editObj = new Edit(db);
-				let updateParams = getSearchParameters(req,config.site.optionalFields[galleryIndex]);
-				editObj.update(getVariableParameter(req,"id"),updateParams,config.site.optionalFields[galleryIndex])
+				let updateParams = getSearchParameters(req,galleryConfig.optionalFields);
+				editObj.update(getVariableParameter(req,"id"),updateParams,galleryConfig.optionalFields)
 				       .then((result) => { 
-				    	   pageParams["result"] = result; pageParams["optionalFields"] = config.site.optionalFields[galleryIndex]; pageParams["page"] = "edit";
+				    	   pageParams["result"] = result; pageParams["optionalFields"] = galleryConfig.optionalFields; pageParams["page"] = "edit";
 				    	   if (!"files" in req) {
 				    		   return new Promise((resolve) => { resolve(pageParams["result"]) });
 				    	   } else {
@@ -303,6 +368,33 @@ function hasValue(varValue) {
 	}
 }
 
+function getGalleryParam(req) {
+	let gallery = getVariableParameter(req,"gallery");
+	if (!hasValue(gallery)) {
+		gallery = getSessionVariable(req,"gallery");
+	} else {
+		setSessionVariable(req,"gallery",gallery);
+	}
+	if (!hasValue(gallery)) return "";
+	else return gallery;
+}
+
+function getDefaultPageParams(config, req) {
+	let pageParams = {
+		"page":"",
+		"errorMsg":"",
+		"gallery":getGalleryParam(req),
+		"galleryConfig":{},
+		"config":config.site,
+		"optionalFields":{},
+		"params": {
+		}
+	};
+	return pageParams;
+}
+
+
+
 function getSearchParameters(req, optionalFields) {
 	let searchParams = {};
 	if (getVariableParameter(req,"title")) {
@@ -316,10 +408,12 @@ function getSearchParameters(req, optionalFields) {
 		if (getVariableParameter(req,field.name)) {
 			searchParams[field.name] = getVariableParameter(req,field.name);
 			// if it's supposed to be an array, make it one if it has only one value
-			if (field.type === "checkbox" || field.type === "taglist") {
+			if (field.type === "checkbox") {
 				if (!((searchParams[field.name]).constructor === Array)) {
 					searchParams[field.name] = [searchParams[field.name]];
 				}
+			} else if (field.type === "arblist" || field.type === "taglist") {
+				searchParams[field.name] = JSON.parse(searchParams[field.name]);
 			}
 		}
 	}

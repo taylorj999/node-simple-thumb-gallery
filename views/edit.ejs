@@ -2,15 +2,45 @@
 <html lang="en">
 <head>
  <%- include('partials/header', {'page': page}) %>
+<link rel="stylesheet" href="/css/tag-editor.css"/>
+<script type="text/javascript" src="/js/tag-editor.js"></script>
+
+ <script>
+$(document).ready(function() {
+	const params = {
+			"delimiters": ["Comma","Enter","NumpadEnter"]
+			// entering any of the "delimiters" while typing will end the current tag data entry
+			// any valid event.code can be a delimiter for ex "Space", "Escape"
+			// https://keycode.info/
+	};
+	
+	setupTagEditor(params);
+	
+	// optional dynamic width detection will change the 'hit width' of the remove button if you have changed the font size or other style cues
+	try {
+		const dynamicRemoveButtonWidthDetect = $("#widthDetectTag")[0].offsetWidth;
+		if (dynamicRemoveButtonWidthDetect > window.globalTagEditorRemoveButtonWidth) {
+			window.globalTagEditorRemoveButtonWidth = dynamicRemoveButtonWidthDetect;
+		}
+	} catch (error) {
+		console.error(error);
+	}
+	
+	$("#widthDetectTag").remove();
+
+  <% if (errorMsg.length > 0) { %>
+    $("#errorbox").show();
+  <% } %>
+});
+ </script>
+
 </head>
 <body>
  <%- include('partials/mainmenu', {'active':'edit','gallery':gallery}) %>
 <div class="container">
-  <% if (errorMsg.length > 0) { %>
-    <div class="alert alert-warning" role="alert">
+    <div class="alert alert-warning" role="alert" style="display:none;">
       <%=errorMsg%>
     </div>
-  <% } %>
 <%- include('partials/editbox') %>
 
   <div style="display:none;">

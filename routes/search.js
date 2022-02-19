@@ -33,8 +33,11 @@ Search.prototype.doSearch = function doSearch(galleryName,searchParams,optionalF
 			if (field.name in searchParams) {
 				if (field.type === "text") {
 					whereClause[fieldname] = {"$eq":searchParams[field.name]};
-				} else if (field.type === "checkbox" || field.type === "taglist") {
+				} else if (field.type === "checkbox") {
 					whereClause[fieldname] = {"$all":searchParams[field.name]};
+				} else if (field.type === "arblist" || field.type === "taglist") {
+					if (Array.isArray(searchParams[field.name]) && searchParams[field.name].length > 0)
+						whereClause[fieldname] = {"$all":searchParams[field.name]};
 				}
 			}
 		}

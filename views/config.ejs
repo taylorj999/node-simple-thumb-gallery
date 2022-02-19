@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+ <%- include('partials/header', {'page': page}) %>
+<link rel="stylesheet" href="/css/tag-editor.css"/>
+<script type="text/javascript" src="/js/tag-editor.js"></script>
+ 
+ <script>
+var galleryCount = <%=config.galleries.length%>;
+var galleryEditing = null;
+
+function setGalleryEditable(id) {
+  if (galleryEditing == null) {
+     galleryEditing = id;
+  } else if (galleryEditing != id) {
+     return false;
+  } else if (galleryEditing == id) {
+     document.getElementById("configForm"+id).submit();
+  }
+  for (let x=0;x<galleryCount;x++) {
+    if (x==id) {
+	    $("#formButton"+x).text("Save");
+	    $("#optionalFields"+x).show();
+	    $("#optionalFieldsCount"+x).hide();
+	    $("#galleryName"+x).prop('disabled',false);
+	    $("#galleryVisible"+x).prop('disabled',false);
+	} else {
+	    $("#formButton"+x).prop('disabled',true);
+	    $("#formButton"+x).addClass("disabled");
+	}
+  }
+}
+
+function validateOptionalField(id) {
+  let validateSucc=true;
+  if ($("#optionalFields_NEW_name_"+id).val().trim().length == 0) {
+    $("#errorbox").html("Optional Field Name is a required field");
+    $("#optionalFields_NEW_name_"+id).focus();
+    validateSucc=false;
+  } else if ($("#optionalFields_NEW_type_"+id).val() == "0") {
+    $("#errorbox").html("Optional Field Type is a required field");
+    $("#optionalFields_NEW_type_"+id).focus();
+    validateSucc=false;
+  } else if ($("#optionalFields_NEW_display_"+id).val().trim().length == 0) {
+    $("#errorbox").html("Optional Field Display Name is a required field");
+    $("#optionalFields_NEW_display_"+id).focus();
+    validateSucc=false;
+  }
+  if (!validateSucc) $("#errorbox").show();
+  else setGalleryEditable(id);
+}
+
+$(document).ready(function() {
+	const params = {
+			"delimiters": ["Comma","Enter","NumpadEnter"]
+			// entering any of the "delimiters" while typing will end the current tag data entry
+			// any valid event.code can be a delimiter for ex "Space", "Escape"
+			// https://keycode.info/
+	};
+	
+	setupTagEditor(params);
+	
+	// optional dynamic width detection will change the 'hit width' of the remove button if you have changed the font size or other style cues
+	try {
+		const dynamicRemoveButtonWidthDetect = $("#widthDetectTag")[0].offsetWidth;
+		if (dynamicRemoveButtonWidthDetect > window.globalTagEditorRemoveButtonWidth) {
+			window.globalTagEditorRemoveButtonWidth = dynamicRemoveButtonWidthDetect;
+		}
+	} catch (error) {
+		console.error(error);
+	}
+	
+	$("#widthDetectTag").remove();
+
+  <% if (errorMsg.length > 0) { %>
+    $("#errorbox").show();
+  <% } %>
+});
+ </script>
+</head>
+<body>
+ <%- include('partials/mainmenu', {'active':'edit','gallery':gallery}) %>
+<div class="container">
+    <div class="alert alert-warning" style="display:none;" role="alert" id="errorbox">
+      <%=errorMsg%>
+    </div>
+  <% for (let x=0;x<config.galleries.length;x++) { 
+     let thisGallery = config.galleries[x]; %>
+  <form name="configForm<%=x%>" method="POST" id="configForm<%=x%>" class="border clearfix">
+    <input type="hidden" name="galleryId" value="<%=thisGallery._id%>"/>
+    <div class="w-100 bg-info">&nbsp;&nbsp;Gallery Id: <%=thisGallery._id%> <span><a href="#" onClick="setGalleryEditable(<%=x%>);" class="btn btn-sm btn-primary" id="formButton<%=x%>">Edit</a></span>
+    </div>
+  	<div class="form-group pl-2">
+  	  <label for="galleryName<%=x%>"><strong>Gallery Name:</strong></label>
+  	  <input class="form-control" type="text" name="galleryName" id="galleryName<%=x%>" value="<%=thisGallery.galleryName%>" disabled/>
+  	</div>
+  	<div class="form-check ml-2">
+  	  <input type="checkbox" class="form-check-input" id="galleryVisible<%=x%>" name="galleryVisible" <% if (thisGallery.galleryVisible) { %>checked<%}%> disabled>
+  	  <label for="galleryVisible<%=x%>"><strong>Show gallery in menu</strong></label>
+  	</div>
+  	<div id="optionalFieldsCount<%=x%>"><%=thisGallery.optionalFields.length%> optional fields</div>
+  	<div class="ml-2 mr-2 border border-1" style="display:none;" id="optionalFields<%=x%>">
+        <div class="w-100 bg-info">&nbsp;&nbsp;Optional Fields</div>
+  	<%  let y=0;
+  	    for (y=0; y<thisGallery.optionalFields.length; y++) {
+  	    let thisField = thisGallery.optionalFields[y]; %>
+  	    <div class="container border border-2">
+  	      <div class="row">
+  	        <div class="col-6"><strong>Field Name:</strong> <%=thisField.name%></div>
+  	        <div class="col-6"><strong>Type:</strong> 
+  	        <% if (thisField.type == "text") { %>Text
+  	        <% } else if (thisField.type == "url") {%>URL Link
+  	        <% } else if (thisField.type == "checkbox") {%>Checkbox Multiselect
+  	        <% } else if (thisField.type == "arblist") {%>Arbitrary List
+  	        <% } else if (thisField.type == "taglist") {%>List of Tags
+  	        <% } %>
+  	        <input type="hidden" name="optionalFields_<%=thisField.name%>_type_<%=x%>" value="<%=thisField.type%>"/>
+  	        </div>
+  	      </div>
+  	      <div class="row">
+  	        <div class="form-group col-12">
+  	        	<label for="optionalFields_<%=thisField.name%>_display_<%=x%>"><strong>Display Name:</strong></label>
+  	        	<input class="form-control" type="text" name="optionalFields_<%=thisField.name%>_display_<%=x%>" id="optionalFields_<%=thisField.name%>_display_<%=x%>" value="<%=thisField.display%>"/>
+  	        </div>
+  	      </div>
+  	      <% if (thisField.type == "checkbox") { %>
+  	      <div class="row">
+  	        <div class="col-12">
+  	          <label><strong>Select Options:</strong></label>
+	  		  <div class="tag-editor w-100 pl-2 pt-2 pb-1 bg-light border rounded" data-field-id="optionalFields_<%=thisField.name%>_options_<%=x%>">
+	  			<span class="tags">
+  	        <% if (Array.isArray(thisField.options)) {
+    	        for (let z=0; z<thisField.options.length; z++) { %>
+					<span class="tag">
+					  <span class="tag-data"><%=thisField.options[z]%></span>
+					</span>
+  	        <%  } 
+  	           } %>
+				</span>
+  	          </div>
+			<br/>
+			<input id="optionalFields_<%=thisField.name%>_options_<%=x%>" type="hidden" size="50" name="optionalFields_<%=thisField.name%>_options_<%=x%>"/>
+			</div>
+			</div>
+  	      <% } %>
+  	    </div>
+  	<% } %>
+  	<div class="container border border-2">
+  	  <div class="row"><div class="bg-info col-12">&nbsp;New Optional Field&nbsp;&nbsp;<span><a href="#" onClick="validateOptionalField(<%=x%>);" class="btn btn-sm btn-primary">Add</a></span></div></div>
+  	  <div class="row">
+  	     <div class="col-6 form-group">
+  	       <label for="optionalFields_NEW_name_<%=x%>"><strong>Field Name:</strong></label>
+  	       <input class="form-control" type="text" id="optionalFields_NEW_name_<%=x%>" name="optionalFields_NEW_name_<%=x%>"/>
+  	     </div>
+  	     <div class="col-6 form-group">
+  	       <label for="optionalFields_NEW_type_<%=x%>"><strong>Type:</strong></label>
+  	       <select class="form-select" name="optionalFields_NEW_type_<%=x%>" id="optionalFields_NEW_type_<%=x%>">
+  			<option value="0" selected>-Select One-</option>
+  			<option value="text">Text Box</option>
+  			<option value="url">URL Link</option>
+  			<option value="checkbox">Checkbox Multiselect</option>
+  			<option value="arblist">Arbitrary List (can contain spaces)</option>
+  			<option value="taglist">Tag List (cannot contain spaces)</option>
+		   </select>
+  	     </div>
+  	  </div>
+  	  <div class="row">
+  	    <div class="col-12 form-group">
+  	      <label for="optionalFields_NEW_display_<%=x%>"><strong>Display Name:</strong></label>
+  	      <input class="form-control" type="text" id="optionalFields_NEW_display_<%=x%>" name="optionalFields_NEW_display_<%=x%>"/>
+  	    </div>
+  	  </div>
+  	</div>
+  	</div>
+  </form>
+  <% } %>
+</div>
+</body>
+</html> 

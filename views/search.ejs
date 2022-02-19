@@ -3,11 +3,17 @@
 <head>
  <%- include('partials/header', {'page': page}) %>
 <script type="text/javascript" src="/js/jquery.simplePagination.js"></script>
+<link rel="stylesheet" href="/css/tag-editor.css"/>
+<script type="text/javascript" src="/js/tag-editor.js"></script>
+<%
+  let searchPage = params["searchPage"];
+  if (searchPage==null || searchPage==undefined) searchPage = "1";
+%>
 <script>
 $( document ).ready(function() {
     $("#pagination").pagination({
         items: '<%=searchResults["count"]%>',
-        itemsOnPage: <%=itemsPerPage%>,
+        itemsOnPage: <%=config.itemsPerPage%>,
         cssStyle: 'light-theme',
         currentPage: '<%=searchPage%>',
         onPageClick: function (pageNum) {
@@ -15,17 +21,40 @@ $( document ).ready(function() {
         	document.forms[0].submit();
         }
     });
+    
+    	const params = {
+			"delimiters": ["Comma","Enter","NumpadEnter"]
+			// entering any of the "delimiters" while typing will end the current tag data entry
+			// any valid event.code can be a delimiter for ex "Space", "Escape"
+			// https://keycode.info/
+	};
+	
+	setupTagEditor(params);
+	
+	// optional dynamic width detection will change the 'hit width' of the remove button if you have changed the font size or other style cues
+	try {
+		const dynamicRemoveButtonWidthDetect = $("#widthDetectTag")[0].offsetWidth;
+		if (dynamicRemoveButtonWidthDetect > window.globalTagEditorRemoveButtonWidth) {
+			window.globalTagEditorRemoveButtonWidth = dynamicRemoveButtonWidthDetect;
+		}
+	} catch (error) {
+		console.error(error);
+	}
+	
+	$("#widthDetectTag").remove();
+
+  <% if (errorMsg.length > 0) { %>
+    $("#errorbox").show();
+  <% } %>
 });
 </script>
 </head>
 <body>
- <%- include('partials/mainmenu', {'active':'search','gallery':gallery}) %>
+ <%- include('partials/mainmenu') %>
 <div class="container">
- <% if (errorMsg.length > 0) { %>
-   <div class="alert alert-warning" role="alert">
+   <div class="alert alert-warning" role="alert" style="display:none;">
       <%=errorMsg%>
    </div>
- <% } %>
 <% if (searchResults.count > 0) { %>
 <p class="pt-2">
   <button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#collapseSearch" aria-expanded="false" aria-controls="collapseSearch">
@@ -34,7 +63,7 @@ $( document ).ready(function() {
 </p>
 <div class="collapse" id="collapseSearch">
 <% } %>
-<%- include('partials/searchbox', {'optionalFields':optionalFields,'values':searchParams,'searchPage':searchPage}) %>
+<%- include('partials/searchbox', {'optionalFields':optionalFields,'values':searchParams}) %>
 <% if (searchResults.count > 0) { %>
 </div>
 <div class="row">

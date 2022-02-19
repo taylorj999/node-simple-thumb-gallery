@@ -1,0 +1,55 @@
+.tag-editor {
+	overflow-x: hidden;
+	cursor: text;
+	font-size: 14px;
+	min-height: 30px;
+	text-align:left;
+	line-height:150%;
+	box-shadow: 0 1px 2px 1px rgba(0,0,0,0.33) inset;
+}
+
+.tag {
+	padding: 10px 12px;
+	margin-right: 5px;
+	margin-bottom: 5px;
+	border-radius: 3px;
+	box-shadow: 0 0 0 1px rgba(179, 179, 179, 1) inset;
+	background-color: lightblue;
+	white-space: nowrap;
+	display: inline-block;
+}
+
+.tag > span::before {
+	content: '';
+}
+
+.tag > span::after {
+	content: ' \00d7';
+	font-weight: bold;
+	margin-left: 7px;
+	margin-right: -2px;
+}
+
+.tag-data {
+    cursor: auto;
+}
+
+.tag-new {
+	box-shadow: none;
+	padding: 10px 6px;
+}
+
+.tag-input {
+	outline: none;
+	display: inline-block;
+	min-width: 1px;
+	color: #111;
+	background-color: white;
+}
+.tag-new > span::before {
+	content: '';
+}
+
+.tag-new > span::after {
+	content: '';
+}

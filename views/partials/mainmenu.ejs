@@ -1,12 +1,12 @@
 <div id="mainMenuNav" class="nav navbar navbar-expand-lg navbar-light bg-light" role="navigation">
   <div class="navbar-nav">
-    <a href="/?gallery=" class="navbar-brand"><%= gallery %></a>
-    <% if (active === "search") { %>
+    <a href="/?gallery=-1" class="navbar-brand"><%= galleryConfig.galleryName %></a>
+    <% if (page === "search") { %>
       <a href="/search" class="nav-item nav-link active">Search</a>
     <% } else { %>
       <a href="/search" class="nav-item nav-link">Search</a>
     <% } %>
-    <% if (active === "add") { %>
+    <% if (page === "add") { %>
       <a href="/add" class="nav-item nav-link active">Add</a>
     <% } else { %>
       <a href="/add" class="nav-item nav-link">Add</a>
@@ -14,5 +14,6 @@
     <% if (page === "view") { %>
       <a href="/edit?id=<%=id%>" class="nav-item nav-link">Edit</a>
     <% } %>
+    <a href="/config" class="nav-item nav-link">Config</a>
   </div>
 </div>  
