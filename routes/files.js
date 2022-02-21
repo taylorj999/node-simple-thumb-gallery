@@ -4,7 +4,7 @@ var ObjectId = require('mongodb').ObjectID
    ,os = require('os')
    ,sharp = require('sharp')
    ,axios = require('axios')
-   ,config = require('../config/config');
+   ,FilesImpl = require('../impl/filesImpl').FilesImpl;
 
 function Files(db) {
 	"use strict";
@@ -20,6 +20,37 @@ function Files(db) {
 	this.db = db;
 }
 
+Files.prototype.add = function add(id,filePath,preserveOriginalFile,config) {
+	let self = this;
+	return new Promise((resolve, reject) => {
+		let filesImpl = new FilesImpl(config,self.db);
+		let filesClient = filesImpl.getClient();
+		filesClient.putImage(config,preserveOriginalFile, filePath)
+		           .then((result) => {
+				 		 let whereClause = {"_id":{"$eq":new ObjectId(id)}};
+				    	 let updateClause = {"$set":{"thumbnail":result.toHexString()}};
+				    	 return self.db.collection("galleryitem").findOneAndUpdate(whereClause,updateClause,{"returnOriginal":false,"returnNewDocument":true});
+				     })
+				     .then((result) => { resolve(result.value); })
+		           .catch((err) => {
+		        	   console.log("Error uploading file");
+		        	   reject(err);
+		           });
+	});
+}
+
+Files.prototype.getStream = function getStream(config,imageId) {
+	let self = this;
+	return new Promise((resolve,reject) => {
+		let filesImpl = new FilesImpl(config,self.db);
+		let filesClient = filesImpl.getClient();
+		filesClient.getStream(config,imageId)
+		           .then((res) => { resolve(res); })
+		           .catch((err) => { reject(err); });
+	});
+}
+
+/*
 Files.prototype.add = function add(id,fileTempPath) {
 	let self = this;
 	return new Promise((resolve,reject) => {
@@ -39,7 +70,7 @@ Files.prototype.add = function add(id,fileTempPath) {
 		    	 return self.db.collection("thumbnails").insertOne(newThumbData);
 		     })
 		     .then((result) => {
-		    	 console.log("Inserted id:" + result.insertedId);
+//		    	 console.log("Inserted id:" + result.insertedId);
 		 		 let whereClause = {"_id":{"$eq":new ObjectId(id)}};
 		    	 let updateClause = {"$set":{"thumbnail":newThumbId.toHexString()}};
 		    	 return self.db.collection("galleryitem").findOneAndUpdate(whereClause,updateClause,{"returnOriginal":false,"returnNewDocument":true});
@@ -47,18 +78,18 @@ Files.prototype.add = function add(id,fileTempPath) {
 		     .then((result) => { resolve(result.value); })
 		     .catch((err) => { reject(err); });
 	});
-}
+}*/
 
-Files.prototype.addFromForm = function addFromForm(id,file) {
+Files.prototype.addFromForm = function addFromForm(id,file,config) {
 	let self = this;
 	return new Promise((resolve,reject) => {
-		self.add(id,file.path)
+		self.add(id,file.path,true,config)
 	    	.then((result) => { resolve(result); })
 	    	.catch((err) => { reject(err); });
 	});
 }
 
-Files.prototype.addFromURL = function addFromURL(id,url) {
+Files.prototype.addFromURL = function addFromURL(id,url,config) {
 	let self = this;
 	return new Promise((resolve,reject) => {
 		let newThumbId = new ObjectId();
@@ -69,7 +100,7 @@ Files.prototype.addFromURL = function addFromURL(id,url) {
 		  })
 		  .then((response) => {
 		    response.data.pipe(fs.createWriteStream(tempPath))
-		            .on('finish', () => { self.add(id,tempPath).then((result) => { resolve(result); }).catch((err) => { reject(err); });})
+		            .on('finish', () => { self.add(id,tempPath,false,config).then((result) => { resolve(result); }).catch((err) => { reject(err); });})
 		            .on('error', (err) => {reject(err);})
 		  })
 		  .catch((err) => { reject(err); });

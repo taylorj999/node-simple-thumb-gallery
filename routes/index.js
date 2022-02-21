@@ -253,11 +253,11 @@ module.exports = exports = function(app, db, config) {
 				    	   } else {
 				    		   if ("file" in req.files) {
 				    			   let fileObj = new Files(db);
-				    			   return fileObj.addFromForm(getVariableParameter(req,"id"),req.files["file"]);
+				    			   return fileObj.addFromForm(getVariableParameter(req,"id"),req.files["file"], config);
 				    		   } else if (hasValue(getVariableParameter(req,"thumbnailUrl"))) {
 				    			   pageParams["imageUrl"] = getVariableParameter(req,"thumbnailUrl"); // recover imageUrl in case of loader error
 				    			   let fileObj = new Files(db);
-				    			   return fileObj.addFromURL(getVariableParameter(req,"id"),getVariableParameter(req,"thumbnailUrl"));
+				    			   return fileObj.addFromURL(getVariableParameter(req,"id"),getVariableParameter(req,"thumbnailUrl"), config);
 				    		   } else {
 				    			   return new Promise((resolve) => { resolve(pageParams["result"]) });
 				    		   }
@@ -270,7 +270,7 @@ module.exports = exports = function(app, db, config) {
 				       .catch((err) => { pageParams["errorMsg"] = err.message; 
 				                         pageParams["result"] = updateParams; pageParams["result"]["optionalFields"] = updateParams;
 				                         pageParams["result"]["_id"] = getVariableParameter(req,"id");
-				                         pageParams["optionalFields"] = config.site.optionalFields[galleryIndex];
+				                         console.log(err);
 				                         return res.render('edit',pageParams);
 				                       });
 			}
@@ -285,9 +285,15 @@ module.exports = exports = function(app, db, config) {
 		    return res.send('404: File Not Found');
 		} else {
 			let fileObj = new Files(db);
+			/*
 			fileObj.getThumbnailName(imageId)
 			       .then((imageName) => {
 			    	   return res.sendFile(path.join(__dirname, "../images/", imageId.substring(0,7), imageName));
+			       })
+			       */
+			fileObj.getStream(config,imageId)
+			       .then((imageStream) => {
+			    	   imageStream.pipe(res);
 			       })
 			       .catch((err) => {
 			    	   console.log(err.message);

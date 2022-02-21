@@ -17,6 +17,16 @@ config.system.port = 3013;
 //define specific configuration document in the database "config" collection
 config.system.dynamicConfigId = null;
 
+// define file handler, this would allow different methods of file storage (eg cloud providers) to be plugged in
+config.system.filesImplType = "local";
+
+config.system.filesImplConfig = {
+		"local":{
+			"pathType":"relative",
+			"directoryPath":"../images"
+		}
+};
+
 config.site = {};
 
 config.site.itemsPerPage = 12;
