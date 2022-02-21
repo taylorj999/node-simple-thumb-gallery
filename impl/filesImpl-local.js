@@ -92,7 +92,7 @@ FilesImpl.prototype.getStream = function getStream(config, imageId) {
 		self.db.collection("thumbnails").findOne({"_id":new ObjectId(imageId)})
 		       .then((result) => { 
 		    	   if (self.hasValue(result)) {
-		    		   let fileStream = fs.createReadStream(path.join(implOptions["directoryPath"],imageId.slice(-2),result.filename));
+		    		   let fileStream = fs.createReadStream(path.join(implOptions["directoryPath"],result._id.toHexString().slice(-2),self.generateFileName(result._id.toHexString(),result.format)));
 		    		   
 		    		   fileStream.on('open', function() { resolve(fileStream); });
 		    		   fileStream.on('error', function(err) { reject(err); });
@@ -103,6 +103,19 @@ FilesImpl.prototype.getStream = function getStream(config, imageId) {
 		       .catch((err) => { reject(err); });
 	});
 }
+
+FilesImpl.prototype.generateFileName = function generateFileName(prefix, suffix) {
+	if (this.stringContains(prefix,".") || this.stringContains(prefix,"/") || this.stringContains(prefix,"\\")
+	    || this.stringContains(suffix,".") || this.stringContains(suffix,"/") || this.stringContains(suffix,"\\")) {
+		throw new Error("Potential file access hazard in: " + prefix + " or " + suffix);
+	} else {
+		return prefix+"."+suffix;
+	}
+}
+
+FilesImpl.prototype.stringContains = function stringContains(theString,theSubstring) {    
+    return theString.indexOf(theSubstring) > -1;
+}    
 
 FilesImpl.prototype.hasValue = function hasValue(varValue) {
 	if (varValue === undefined) {
