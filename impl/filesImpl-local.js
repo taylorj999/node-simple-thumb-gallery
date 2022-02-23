@@ -39,7 +39,8 @@ FilesImpl.prototype.putImage = function putImage(config,preserveOriginalFile,fil
 	    	 
 	    	 let cleanFileId = false;
 	 		 let newImageId = new ObjectId();
-	 		 let subDirName = newImageId.toHexString().slice(-2);
+	 		 let imageIdSuffix = newImageId.toHexString().slice(-4);
+	 		 let subDirName = path.join(imageIdSuffix.substring(2),imageIdSuffix.substring(0,2));
 	 		 let breakCount = 10;
 	 		 let newFileName = newImageId.toHexString() + "." + metadata.format;
 	 		 while (!cleanFileId) {
@@ -57,7 +58,8 @@ FilesImpl.prototype.putImage = function putImage(config,preserveOriginalFile,fil
 	 			}
 	 			if (!cleanFileId) {
 	 				newImageId = new ObjectId();
-	 				subDirName = newImageId.toHexString().slice(-2);
+		 		    imageIdSuffix = newImageId.toHexString().slice(-4);
+	 		 		subDirName = path.join(imageIdSuffix.substring(2),imageIdSuffix.substring(0,2));
 	 				newFileName = newImageId.toHexString() + "." + metadata.format;
 	 			}
 	 			if (breakCount == 0) return reject(new Error("Problem allocating new file ID: no unused id could be found"));
@@ -92,7 +94,10 @@ FilesImpl.prototype.getStream = function getStream(config, imageId) {
 		self.db.collection("thumbnails").findOne({"_id":new ObjectId(imageId)})
 		       .then((result) => { 
 		    	   if (self.hasValue(result)) {
-		    		   let fileStream = fs.createReadStream(path.join(implOptions["directoryPath"],result._id.toHexString().slice(-2),self.generateFileName(result._id.toHexString(),result.format)));
+		    		   let resultIdSuffix = result._id.toHexString().slice(-4);
+		    		   if (self.containsPathChars(resultIdSuffix)) throw new Error("Potential file access hazard in: " + result._id.toHexString());
+		    		   
+		    		   let fileStream = fs.createReadStream(path.join(implOptions["directoryPath"],resultIdSuffix.substring(2),resultIdSuffix.substring(0,2),self.generateFileName(result._id.toHexString(),result.format)));
 		    		   
 		    		   fileStream.on('open', function() { resolve(fileStream); });
 		    		   fileStream.on('error', function(err) { reject(err); });
@@ -104,9 +109,16 @@ FilesImpl.prototype.getStream = function getStream(config, imageId) {
 	});
 }
 
+FilesImpl.prototype.containsPathChars = function containsPathChars(theString) {
+	if (this.stringContains(theString,".") || this.stringContains(theString,"/") || this.stringContains(theString,"\\")) {
+		return true;
+	} else {
+		return false;
+	}
+}
+
 FilesImpl.prototype.generateFileName = function generateFileName(prefix, suffix) {
-	if (this.stringContains(prefix,".") || this.stringContains(prefix,"/") || this.stringContains(prefix,"\\")
-	    || this.stringContains(suffix,".") || this.stringContains(suffix,"/") || this.stringContains(suffix,"\\")) {
+	if (this.containsPathChars(prefix) || this.containsPathChars(suffix)) {
 		throw new Error("Potential file access hazard in: " + prefix + " or " + suffix);
 	} else {
 		return prefix+"."+suffix;
