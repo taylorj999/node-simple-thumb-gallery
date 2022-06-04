@@ -52,7 +52,7 @@ $( document ).ready(function() {
 <body>
  <%- include('partials/mainmenu') %>
 <div class="container">
-   <div class="alert alert-warning" role="alert" style="display:none;">
+   <div class="alert alert-warning" id="errorbox" role="alert" style="display:none;">
       <%=errorMsg%>
    </div>
 <% if (searchResults.count > 0) { %>
