@@ -21,16 +21,16 @@
     "axios": "^0.21.2",
     "bootstrap": "4.4.1",
     "connect-mongodb-session": "^3.1.1",
-    "ejs": "^3.1.7",
-    "express": "4.17.1",
+    "ejs": "^3.1.2",
+    "express": "^4.17.1",
     "express-form-data": "^2.0.13",
     "express-session": "^1.17.1",
     "jquery": "latest",
     "markdown-it": "^12.3.2",
     "mongodb": "^3.3.3",
     "popper.js": "^1.16.1",
-    "sharp": "^0.30.6",
+    "sharp": "^0.25.2",
     "turndown": "^7.1.1",
-    "validator": "13.7.0"
+    "validator": "^13.7.0"
   }
 }
