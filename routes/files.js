@@ -100,7 +100,7 @@ Files.prototype.addFromURL = function addFromURL(id,url,config) {
 		  })
 		  .then((response) => {
 		    response.data.pipe(fs.createWriteStream(tempPath))
-		            .on('finish', () => { self.add(id,tempPath,false,config).then((result) => { resolve(result); }).catch((err) => { reject(err); });})
+		            .on('finish', () => { self.add(id,tempPath,true,config).then((result) => { resolve(result); }).catch((err) => { reject(err); });})
 		            .on('error', (err) => {reject(err);})
 		  })
 		  .catch((err) => { reject(err); });

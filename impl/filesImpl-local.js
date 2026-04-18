@@ -31,7 +31,30 @@ FilesImpl.prototype.putImage = function putImage(config,preserveOriginalFile,fil
 	return new Promise((resolve, reject) => {
 		let image = sharp(filePath);
 		let newThumbData = {};
+		let finalFilePath = filePath;
 		image.metadata()
+		 .then((metadata) => {
+			 let resizeImg = false;
+			 let reformatImg = false;
+			 if (metadata.width > 1024) resizeImg = true;
+			 if (metadata.format == "webp") reformatImg = true;
+			 if (resizeImg && reformatImg) {
+				 // if it's too large and it's in a bad format, resize and output to new format
+				 finalFilePath = filePath + ".png";
+				 return image.resize(1024).toFile(finalFilePath);
+			 } else if (reformatImg) {
+				 // just in the wrong format, convert it to png
+				 finalFilePath = filePath + ".png";
+				 return image.toFile(finalFilePath);
+			 } else if (resizeImg) {
+				 // resize but don't change format
+				 finalFilePath = filePath + "." + metadata.format;
+				 return image.resize(1024).toFile(finalFilePath);
+			 } else {
+				 // nothing needs changing
+				 return (metadata);
+			 }
+		 })
 	     .then((metadata) => {
 	    	 newThumbData.format = metadata.format;
 	    	 newThumbData.width = metadata.width;
@@ -62,15 +85,16 @@ FilesImpl.prototype.putImage = function putImage(config,preserveOriginalFile,fil
 	 		 		subDirName = path.join(imageIdSuffix.substring(2),imageIdSuffix.substring(0,2));
 	 				newFileName = newImageId.toHexString() + "." + metadata.format;
 	 			}
-	 			if (breakCount == 0) return reject(new Error("Problem allocating new file ID: no unused id could be found"));
+	 			if (breakCount <= 0) return reject(new Error("Problem allocating new file ID: no unused id could be found"));
 	 		 }
 	    	 newThumbData.filename = newFileName;
 	    	 newThumbData["_id"] = newImageId;
 	    	 
 	    	 if (preserveOriginalFile) {
-	    		 fs.copyFileSync(filePath, path.join(implOptions["directoryPath"],subDirName,newFileName), fs.constants.COPYFILE_EXCL);
+	    		 if (config.system.debug) console.log("here: " + finalFilePath + " to here: " + path.join(implOptions["directoryPath"],subDirName,newFileName));
+	    		 fs.copyFileSync(finalFilePath, path.join(implOptions["directoryPath"],subDirName,newFileName), fs.constants.COPYFILE_EXCL);
 	    	 } else {
-	    		 fs.renameSync(filePath,path.join(implOptions["directoryPath"],subDirName, newThumbData.filename));
+	    		 fs.renameSync(finalFilePath,path.join(implOptions["directoryPath"],subDirName, newThumbData.filename));
 	    	 }
 	    	 return self.db.collection("thumbnails").insertOne(newThumbData);
 	     })
@@ -88,7 +112,7 @@ FilesImpl.prototype.getStream = function getStream(config, imageId) {
 	let implOptions = config.system.filesImplConfig[config.system.filesImplType];
 	let self=this;
 	
-	console.log("ImageId: " + imageId);
+	if (config.system.debug) console.log("ImageId: " + imageId);
 	
 	return new Promise((resolve, reject) => {
 		self.db.collection("thumbnails").findOne({"_id":new ObjectId(imageId)})
